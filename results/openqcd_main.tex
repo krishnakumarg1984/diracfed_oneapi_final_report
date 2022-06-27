@@ -1,16 +1,19 @@
 %!TEX root = ../main.tex
+% chktex-file 1
+% chktex-file 44
+% chktex-file 13
 
 \subsection{OpenQCD}\label{sec:openqcd}
 
-OpenQCD-FASTSUM \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/}} is a code for Lattice QCD simulations.
+OpenQCD-FASTSUM\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/}} is a code for Lattice QCD simulations.
 The main development is in C, with some functions heavily optimized using intrinsics from various instruction sets.
 This work builds upon previous DiRAC work, where the code was profiled and the main hotspot was identified as the Dirac-Wilkinson (DW) operator.
 The DW operator was ported to CUDA and a data layout optimization was performed to improve performance on V100 GPUs.
 
 \subsubsection{Testing}\label{testing_openqcd}
 
-The repository contains a stand-alone test \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
-We found generating the reference data difficult using the main CPU code based on \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
+The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
+We found generating the reference data difficult using the main CPU code based on\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
 However, We were able to recover the original reference data and verify the CUDA code.
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
 This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{Report on difficulties with Git LFS on GitHub}
@@ -72,11 +75,11 @@ The \verb!dpct::get_device()! function seems to differ in no way in functionalit
 To compile the code targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package.
 This worked out of the box using the automatically generated Makefile simply using the \texttt{make} command.
 
-To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler \footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
+To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
 
-In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in section~\ref{sec:openqcd_porting}.
+In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in Section~\ref{sec:openqcd_porting}.
 In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend.
-The automatically generated Makefile did not work for the NVidia backend, and we manually modified it \footnote{\url{https://github.com/UCL-ARC/openqcd-fastsum/blob/3ac9c02357768d9e68500b7200cb3ea3094c52db/tests/cuda2/dpct_output/Makefile\#L17}}\todo{update links} to simply contain a target of the type
+The automatically generated Makefile did not work for the NVidia backend, and we manually modified it\footnote{\url{https://github.com/UCL-ARC/openqcd-fastsum/blob/3ac9c02357768d9e68500b7200cb3ea3094c52db/tests/cuda2/dpct_output/Makefile\#L17}}\todo{update links} to simply contain a target of the type
 \begin{verbatim}
 nvidia: main.c dw_soa_sycl.cpp read_in.c
         $(CC) $(INCLUDES) $(CFLAGS) $^ -o main.nvidia_gpu
@@ -95,13 +98,13 @@ NVidia tools seemed the only feasible option for profiling performance on NVidia
 NSight compute works reasonably well on SYCL code.
 The main issue is that since the kernels executed on the GPU are generated from lambda functions in SYCL, the function names are not retained as kernel names.
 Instead, the profiled kernels have generic names that can be hard to decipher if the code contains multiple kernels.
-As a workaround for this issue, we noted that the demangled kernel names have a running index $1 \ldots N$ and it is possible to profile them individually by using \verb #ncu# flags \verb #--kernel-name-base demangled --kernel-name regex:"instance i"# where $i$ is the running index.
+As a workaround for this issue, we noted that the demangled kernel names have a running index $1 \ldots N$ and it is possible to profile them individually by using \verb #ncu# flags \verb #--kernel-name-base demangled --kernel-name regex:"instance i"# where $i$ is the running index.  % chktex 18
 One can then tell from the source code view which kernel is being profiled.
 It may also be possible to pass the kernel name to \verb #parallel_for# in SYCL as a template argument.
 The documentation hints at this, but investigating it has been left for future work.\todo{This turned out easy to do}
 
 Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
-We have summarized the preliminary results in table \ref{tab:openqcd_perf}.
+We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
 The difference varies between the kernels we studied, from a factor of 2 to a factor of 6.
 We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel.
 NSight Compute suggests the kernels are bottlenecked by memory throughput.
