@@ -1,10 +1,14 @@
 %!TEX root = ../main.tex
+% chktex-file 13
+% chktex-file 24
+% chktex-file 10
+% chktex-file 17
 
 \subsection{OpenMM}\label{sec:openmm}
 
 \subsubsection{Running out of the Box}\label{sec:openmm_ootb}
 
-OpenMM \footnote{\url{https://github.com/openmm/openmm}} is a high performance molecular dynamics (MD) code built with a focus on GPU platforms.
+OpenMM\footnote{\url{https://github.com/openmm/openmm}} is a high performance molecular dynamics (MD) code built with a focus on GPU platforms.
 The source code for OpenMM contains CUDA and OpenCL code allowing many platforms to be targeted for computation.
 
 With OpenCL support it is possible to target Intel GPUs and run OpenMM out of the box.
@@ -51,7 +55,7 @@ For simplicity we chose to port the bonded force kernel, this computes forces pe
 As a starting point for this port we extracted the assembled CUDA kernel \verb!computeBondedForces()! from OpenMM.
 After modifying the code to allow this extracted kernel to run in isolation the kernel was then passed through the Intel DPC++ Compatibility Tool.
 Intel DPC++ Compatibility Tool was able to convert 100$\%$ of the code which could then be complied successfully without any modification.
-Whilst compilation occurred without issue on the Intel DevCloud compilation issues where encountered when compiling the code and targeting Nvidia hardware on other machines such as CSD3 \footnote{\url{https://docs.hpc.cam.ac.uk/hpc/index.html}}
+Whilst compilation occurred without issue on the Intel DevCloud compilation issues where encountered when compiling the code and targeting Nvidia hardware on other machines such as CSD3\footnote{\url{https://docs.hpc.cam.ac.uk/hpc/index.html}}
 
 \subsubsection{Performance of the Ported Code}\label{sec:openmm_performance}
 
@@ -63,7 +67,7 @@ Whilst compilation occurred without issue on the Intel DevCloud compilation issu
 
 With SYCL and CUDA versions of the bonded force kernel we compared the performance of these to codes.
 To make this comparison we used XeMax GPUs on the Intel DevCloud and a local Nvidia Quadro M1000M to compute the energies of progressively larger sets of bonds.
-These runs were timed and the resulting the data plotted in figure \ref{fig:openmm}.
+These runs were timed and the resulting the data plotted in figure~\ref{fig:openmm}.
 All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}
 
 \subsubsection{Further Work for Porting OpenMM}\label{sec:openmm_furtherwork}
@@ -71,4 +75,4 @@ All the code used to generate this plot can be found here: \url{https://github.c
 As has already been mentioned above there are two major parts of an OpenMM port to SYCL that have not addressed in this work these are 1) porting of all force kernels and 2) porting of dynamic code generation methods.
 Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority.
 With a definitive answer to if such dynamic generation is possible in SYCL2020 and if the methods available are compatible with OpenMM the remainder of the port may be easier.
-Dynamic generation may be possible via the kernel bundle methods in SYCL2020 \footnote{\url{https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html\#sec:interfaces.bundles}} but further investigation is required.
+Dynamic generation may be possible via the kernel bundle methods in SYCL2020\footnote{\url{https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html\#sec:interfaces.bundles}} but further investigation is required.
