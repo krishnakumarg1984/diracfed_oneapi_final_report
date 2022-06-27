@@ -5,31 +5,31 @@
 \addbibresource{zotero.bib}
 
 \DeclareSourcemap{
-    \maps[datatype=bibtex]{
-        \map{
-            \step[fieldsource=doi,final]
-            \step[fieldset=url,null]
-        }
-    }
+	\maps[datatype=bibtex]{
+		\map{
+			\step[fieldsource=doi,final]
+			\step[fieldset=url,null]
+		}
+	}
 }
 
 \DeclareSourcemap{
-    \maps[datatype=bibtex]{
-        \map[overwrite]{
-            \step[fieldsource=month, match=\regexp{\Ajan\Z}, replace=1]
-            \step[fieldsource=month, match=\regexp{\Afeb\Z}, replace=2]
-            \step[fieldsource=month, match=\regexp{\Amar\Z}, replace=3]
-            \step[fieldsource=month, match=\regexp{\Aapr\Z}, replace=4]
-            \step[fieldsource=month, match=\regexp{\Amay\Z}, replace=5]
-            \step[fieldsource=month, match=\regexp{\Ajun\Z}, replace=6]
-            \step[fieldsource=month, match=\regexp{\Ajul\Z}, replace=7]
-            \step[fieldsource=month, match=\regexp{\Aaug\Z}, replace=8]
-            \step[fieldsource=month, match=\regexp{\Asep\Z}, replace=9]
-            \step[fieldsource=month, match=\regexp{\Aoct\Z}, replace=10]
-            \step[fieldsource=month, match=\regexp{\Anov\Z}, replace=11]
-            \step[fieldsource=month, match=\regexp{\Adec\Z}, replace=12]
-        }
-    }
+	\maps[datatype=bibtex]{
+		\map[overwrite]{
+			\step[fieldsource=month, match=\regexp{\Ajan\Z}, replace=1]
+			\step[fieldsource=month, match=\regexp{\Afeb\Z}, replace=2]
+			\step[fieldsource=month, match=\regexp{\Amar\Z}, replace=3]
+			\step[fieldsource=month, match=\regexp{\Aapr\Z}, replace=4]
+			\step[fieldsource=month, match=\regexp{\Amay\Z}, replace=5]
+			\step[fieldsource=month, match=\regexp{\Ajun\Z}, replace=6]
+			\step[fieldsource=month, match=\regexp{\Ajul\Z}, replace=7]
+			\step[fieldsource=month, match=\regexp{\Aaug\Z}, replace=8]
+			\step[fieldsource=month, match=\regexp{\Asep\Z}, replace=9]
+			\step[fieldsource=month, match=\regexp{\Aoct\Z}, replace=10]
+			\step[fieldsource=month, match=\regexp{\Anov\Z}, replace=11]
+			\step[fieldsource=month, match=\regexp{\Adec\Z}, replace=12]
+		}
+	}
 }
 
 
@@ -38,9 +38,9 @@
 
 % https://tex.stackexchange.com/questions/46787/is-there-a-way-to-prevent-urls-from-appearing-in-biblatex-citations
 \AtEveryCitekey{%
-    \clearfield{url}%
-    \clearfield{urlyear}%
-    \clearfield{doi}%
+	\clearfield{url}%
+	\clearfield{urlyear}%
+	\clearfield{doi}%
 }%
 \renewbibmacro*{in:}{}
 
@@ -50,13 +50,13 @@
 \def\@empty{}
 \def\first#1{\expandafter\@first#1 \@nil}
 \def\@first#1 #2\@nil{#1\addspace%
-  \if\relax\detokenize{#2}\relax\else\@initials#2\@nil\fi}
+	\if\relax\detokenize{#2}\relax\else\@initials#2\@nil\fi}
 \def\initials#1{\expandafter\@initials#1 \@nil}
 \def\@initials#1 #2\@nil{%
-  \initial{#1}%
-  \def\NextName{#2}%
-  \ifx\@empty\NextName\relax%
-  \else\bibinitdelim \@initials#2\@nil\fi}  % chktex 1
+	\initial{#1}%
+	\def\NextName{#2}%
+	\ifx\@empty\NextName\relax%
+	\else\bibinitdelim \@initials#2\@nil\fi}  % chktex 1
 \def\initial#1{\expandafter\@initial#1\@nil}
 \def\@initial#1#2\@nil{#1\bibinitperiod}
 \makeatother
@@ -66,3 +66,6 @@
 
 % \AtBeginBibliography{\vspace*{-10mm}}
 % \renewcommand*{\bibfont}{\small} % helps towards maing bibliography left aligned, not justified
+
+% https://tex.stackexchange.com/questions/264084/remove-url-from-bibliography-but-not-the-actual-url
+\DeclareFieldFormat{url}{\url{#1}}
