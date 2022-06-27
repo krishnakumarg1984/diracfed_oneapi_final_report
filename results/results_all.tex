@@ -1,54 +1,7 @@
-%!TEX root = ./main.tex
+%!TEX root = ../main.tex
 
 \input{results/openqcd_main}
-
-\subsection{OpenMM}
-
-\subsubsection{Running out of the Box}
-
-OpenMM \footnote{\url{https://github.com/openmm/openmm}} is a high performance molecular dynamics (MD) code built with a focus on GPU platforms. The source code for OpenMM contains CUDA and OpenCL code allowing many platforms to be targeted for computation.
-
-With OpenCL support it is possible to target Intel GPUs and run OpenMM out of the box. This process is straightforward and comparable to other platforms. For the readers reference OpenMM can be installed using the following command:
-
-\begin{lstlisting}
-conda install -c conda-forge openmm
-\end{lstlisting}
-
-OpenMM was installed on Intel DevCloud, and targeting the XeMax GPU the following simple benchmark was run:
-
-\begin{lstlisting}
-python benchmark.py --test=pme --platform=OpenCL
-    --precision=single --seconds=3 --heavy-hydrogens
-\end{lstlisting}
-
-This yielded a simulation speed of $107 ns/day$. For comparison, a Nvidia Quadro M1000M (a 2015 GPU with 1.6 times the thermal design power) provides simulation speeds of $82 ns/day$ in the same benchmark. Note that instabilities where observed in these benchmarks on the Intel DevCloud with simulations longer than 3 seconds, such instabilities are not observed on other platforms.
-
-\subsubsection{What to Port to SYCL?}
-
-MD simulations contain computations of many different forces such as those stemming from Lennard-Jones, harmonic bond or electrostatic potentials among many others. The approach OpenMM, and many MD codes, take to computing all these forces is to write separate kernels and code to compute each force and then to sum the force on each atom after the individual calculations are complete. This separation of the kernels allows for a port to consider one kernel at a time. We chose this strategy for simplicity and to further simplify we opted to port the code within OpenMM which addresses the bonded forces. The code for the bonded forces contains the same challenges as the full source code, but is conceptually one of the most simple forces.
-
-\subsubsection{How to Port to SYCL?}
-
-The GPU specific code in OpenMM uses what is referred to as a common compute framework. The main kernels of the code are written in a platform agnostic form and these are then assembled at run time for the target platform. This dynamic code generation presented significant challenges to porting OpenMM to SYCL. The first challenge was that the application of conversion tools such as the Intel DPC++ Compatibility Tool was difficult. We found it was not possible to convert the CUDA source code to SYCL in our testing as the compatibility tool could not recognises and translate the unassembled kernel. Secondly as of SYCL2020 the OpenCL interoperability APIs have been removed. This means that the methods used for dynamic code generation in OpenMM would need more work to translate to SYCL by hand than would have been needed previously. Since both automatic and manual translation of the dynamic code generation in OpenMM were not possible or labour intensive we instead opted to translate a kernel post dynamic generation.
-
-\subsubsection{Porting the Generated Bonded Force Kernel}
-
-For simplicity we chose to port the bonded force kernel, this computes forces pertaining to the harmonic bond forces in the system. As a starting point for this port we extracted the assembled CUDA kernel \verb!computeBondedForces()! from OpenMM. After modifying the code to allow this extracted kernel to run in isolation the kernel was then passed through the Intel DPC++ Compatibility Tool. Intel DPC++ Compatibility Tool was able to convert 100$\%$ of the code which could then be complied successfully without any modification. Whilst compilation occurred without issue on the Intel DevCloud compilation issues where encountered when compiling the code and targeting Nvidia hardware on other machines such as CSD3 \footnote{\url{https://docs.hpc.cam.ac.uk/hpc/index.html}}
-
-\subsubsection{Performance of the Ported Code}
-
-\begin{figure}
-	\caption{Comparison of compute time for different sized sets of bonds using Intel XeMax and Nvidia Quadro M1000M. The timing runs are repeated 5 times, the line is plotted as the average of these repeats and the shaded areas as $\pm$ the standard deviation of the repeats.}
-	\includegraphics[width=\textwidth]{openmm2.png}
-	\label{fig:openmm}
-\end{figure}
-
-With SYCL and CUDA versions of the bonded force kernel we compared the performance of these to codes. To make this comparison we used XeMax GPUs on the Intel DevCloud and a local Nvidia Quadro M1000M to compute the energies of progressively larger sets of bonds. These runs were timed and the resulting the data plotted in figure \ref{fig:openmm}. All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}
-
-\subsubsection{Further Work for Porting OpenMM}
-
-As has already been mentioned above there are two major parts of an OpenMM port to SYCL that have not addressed in this work these are 1) porting of all force kernels and 2) porting of dynamic code generation methods. Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority. With a definitive answer to if such dynamic generation is possible in SYCL2020 and if the methods available are compatible with OpenMM the remainder of the port may be easier. Dynamic generation may be possible via the kernel bundle methods in SYCL2020 \footnote{\url{https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html\#sec:interfaces.bundles}} but further investigation is required.
-
+\input{results/openmm_main}
 
 \subsection{HemeLB}
 Computational fluid dynamics represents a significant use case for high performance computing in many fields of engineering and science. Of the many techniques available in this field, the lattice Boltzmann method (LBM) has gained traction in the community for its ability to be both simply deployed for parallel computation and its facility to handle complex geometric and moving boundary conditions. The HemeLB code \footnote{\url{https://github.com/hemelb-codes}} uses the LBM to study 3D blood flow in human-scale vascular domains and has been optimised to handle the sparse geometries characteristic of these problems. In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG (\textbf{citation}) whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit \cite{zacharoudiou_development_2022}.

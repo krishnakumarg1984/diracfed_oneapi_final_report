@@ -1,12 +1,19 @@
-%!TEX root = ./main.tex
+%!TEX root = ../main.tex
 
 \subsection{OpenQCD}\label{sec:openqcd}
 
-OpenQCD-FASTSUM \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/}} is a code for Lattice QCD simulations. The main development is in C, with some functions heavily optimized using intrinsics from various instruction sets. This work builds upon previous DiRAC work, where the code was profiled and the main hotspot was identified as the Dirac-Wilkinson (DW) operator. The DW operator was ported to CUDA and a data layout optimization was performed to improve performance on V100 GPUs.
+OpenQCD-FASTSUM \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/}} is a code for Lattice QCD simulations.
+The main development is in C, with some functions heavily optimized using intrinsics from various instruction sets.
+This work builds upon previous DiRAC work, where the code was profiled and the main hotspot was identified as the Dirac-Wilkinson (DW) operator.
+The DW operator was ported to CUDA and a data layout optimization was performed to improve performance on V100 GPUs.
 
 \subsubsection{Testing}\label{testing_openqcd}
 
-The repository contains a stand-alone test \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data. We found generating the reference data difficult using the main CPU code based on \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}. However, We were able to recover the original reference data and verify the CUDA code. The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data} This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{Report on difficulties with Git LFS on GitHub}
+The repository contains a stand-alone test \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
+We found generating the reference data difficult using the main CPU code based on \footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
+However, We were able to recover the original reference data and verify the CUDA code.
+The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
+This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{Report on difficulties with Git LFS on GitHub}
 
 \todo{@Tuomas report on CI}
 
@@ -14,7 +21,8 @@ The repository contains a stand-alone test \footnote{\url{https://gitlab.com/fas
 
 Since the DW operator was identified as the main hotspot in the code and a CUDA port had already been made, our approach was to follow Intel's Recommended Workflow illustrated in Figure~\ref{fig:intel-workflow}, starting from existing CUDA code, and use the Intel DPC++ Compatibility Tool (dpct) to generate DPC++ code from it.
 
-We performed the porting on CSD3. We found it difficult to work on the Intel DevCloud, since it did not have a CUDA library installed and dpct needs to access the CUDA header files. \todo{mention Intel tutorial on how to use dpct on DevCloud} Based on examples we found, others had worked around this by uploading their own CUDA headers to their DevCloud account, but this seemed too cumbersome.
+We performed the porting on CSD3.
+We found it difficult to work on the Intel DevCloud, since it did not have a CUDA library installed and dpct needs to access the CUDA header files.\todo{mention Intel tutorial on how to use dpct on DevCloud}Based on examples we found, others had worked around this by uploading their own CUDA headers to their DevCloud account, but this seemed too cumbersome.
 
 On CSD3 our workflow for dpct was the following:
 
@@ -36,26 +44,39 @@ On CSD3 our workflow for dpct was the following:
 	      \end{enumerate}
 \end{enumerate}
 
-Since the build system used a simple Makefile, we used the intercept-build tool capture the source files and compiler commands from it. This simplified the use of dpct significantly. The --gen-build-script flag was used to automatically generate a new Makefile for the ported dpc++ code, although the generated Makefile required some manual editing afterwards.
+Since the build system used a simple Makefile, we used the intercept-build tool capture the source files and compiler commands from it.
+This simplified the use of dpct significantly.
+The --gen-build-script flag was used to automatically generate a new Makefile for the ported dpc++ code, although the generated Makefile required some manual editing afterwards.
 
-After running dpct we got a list of warnings where dpct suggests attention is required from the developers. These are reasonably clear and additional information is available in the documentation. The warnings are listed in \url{https://github.com/UCL-ARC/openqcd-fastsum/issues/3}.\todo{Update links to the new repository} None of them required our immediate attention to compile and run the code. From the point of portability, we note that dpct warns us when workgroup sizes are hardcoded for a particular GPU architecture and recommends querying the device for its maximum workgroup size.
+After running dpct we got a list of warnings where dpct suggests attention is required from the developers.
+These are reasonably clear and additional information is available in the documentation.
+The warnings are listed in \url{https://github.com/UCL-ARC/openqcd-fastsum/issues/3}.\todo{Update links to the new repository}
+None of them required our immediate attention to compile and run the code.
+From the point of portability, we note that dpct warns us when workgroup sizes are hardcoded for a particular GPU architecture and recommends querying the device for its maximum workgroup size.
 
 \subsubsection{Namespaces}\label{sec:openqcd_namespaces}
 
-The dpc++ code produced by dpct includes a namespace \texttt{dpct} from header files within the OneAPI package. In our case this was limited to two functions \verb!dpct::atomic_fetch_add()! and \verb!{dpct::get_device()!. In order to make the code portable to other SYCL implementations one would need to remove the references to the (OneAPI specific) dpct namespace.
+The dpc++ code produced by dpct includes a namespace \texttt{dpct} from header files within the OneAPI package.
+In our case this was limited to two functions \verb!dpct::atomic_fetch_add()! and \verb!{dpct::get_device()!.
+In order to make the code portable to other SYCL implementations one would need to remove the references to the (OneAPI specific) dpct namespace.
 
-The \verb!dpct::atomic_fetch_add()! function is included from the \texttt{atomics.hpp} header file. The header files are distributed with a fairly permissive Apache-2.0 license with LLVM exceptions that allows to re-use them as long as all the modifications are noted. Our solution was to include the \verb!dpct::atomic_fetch_add()! function within our source code. It is a fairly thin wrapper that calls to the \texttt{sycl} namespace.
+The \verb!dpct::atomic_fetch_add()! function is included from the \texttt{atomics.hpp} header file.
+The header files are distributed with a fairly permissive Apache-2.0 license with LLVM exceptions that allows to re-use them as long as all the modifications are noted.
+Our solution was to include the \verb!dpct::atomic_fetch_add()! function within our source code.
+It is a fairly thin wrapper that calls to the \texttt{sycl} namespace.
 
-The \verb!dpct::get_device()! function seems to differ in no way in functionality from the function of the same name in the \texttt{sycl} namespace and can be replaced with no obvious issues. \todo{@Tuomas Report on the porting of getdevice calls}
+The \verb!dpct::get_device()! function seems to differ in no way in functionality from the function of the same name in the \texttt{sycl} namespace and can be replaced with no obvious issues.\todo{@Tuomas Report on the porting of getdevice calls}
 
 \subsubsection{Compiling}\label{sec:openqcd_compiling}
 
-To compile the code targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package. This worked out of the box using the automatically generated Makefile simply using the \texttt{make} command.
+To compile the code targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package.
+This worked out of the box using the automatically generated Makefile simply using the \texttt{make} command.
 
-To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler \footnote{\url{https://github.com/intel/llvm}}
-installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
+To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler \footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
 
-In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in section~\ref{sec:openqcd_porting}. In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend. The automatically generated Makefile did not work for the NVidia backend, and we manually modified it \footnote{\url{https://github.com/UCL-ARC/openqcd-fastsum/blob/3ac9c02357768d9e68500b7200cb3ea3094c52db/tests/cuda2/dpct_output/Makefile\#L17}}\todo{update links} to simply contain a target of the type
+In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in section~\ref{sec:openqcd_porting}.
+In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend.
+The automatically generated Makefile did not work for the NVidia backend, and we manually modified it \footnote{\url{https://github.com/UCL-ARC/openqcd-fastsum/blob/3ac9c02357768d9e68500b7200cb3ea3094c52db/tests/cuda2/dpct_output/Makefile\#L17}}\todo{update links} to simply contain a target of the type
 \begin{verbatim}
 nvidia: main.c dw_soa_sycl.cpp read_in.c
         $(CC) $(INCLUDES) $(CFLAGS) $^ -o main.nvidia_gpu
@@ -68,11 +89,26 @@ with the relevant flags in \verb #$(CFLAGS)# and a path to the header files in \
 
 \subsubsection{Performance}\label{sec:openqcd_performance}
 
-To measure the performance on the NVidia A100 GPUs available on CSD3, we profiled the CUDA and the SYCL versions of the code with the NVidia NSight Compute profiler. NVidia tools seemed the only feasible option for profiling performance on NVidia devices.
+To measure the performance on the NVidia A100 GPUs available on CSD3, we profiled the CUDA and the SYCL versions of the code with the NVidia NSight Compute profiler.
+NVidia tools seemed the only feasible option for profiling performance on NVidia devices.
 
-NSight compute works reasonably well on SYCL code. The main issue is that since the kernels executed on the GPU are generated from lambda functions in SYCL, the function names are not retained as kernel names. Instead, the profiled kernels have generic names that can be hard to decipher if the code contains multiple kernels. As a workaround for this issue We noted that the demangled kernel names have a running index $1 ... N$ and it is possible to profile them individually by using \verb #ncu# flags \verb #--kernel-name-base demangled --kernel-name regex:"instance i"# where $i$ is the running index. One can then tell from the source code view which kernel is being profiled. It may also be possible to pass the kernel name to \verb #parallel_for# in SYCL as a template argument. The documentation hints at this, but investigating it has been left for future work.\todo{This turned out easy to do}
+NSight compute works reasonably well on SYCL code.
+The main issue is that since the kernels executed on the GPU are generated from lambda functions in SYCL, the function names are not retained as kernel names.
+Instead, the profiled kernels have generic names that can be hard to decipher if the code contains multiple kernels.
+As a workaround for this issue, we noted that the demangled kernel names have a running index $1 \ldots N$ and it is possible to profile them individually by using \verb #ncu# flags \verb #--kernel-name-base demangled --kernel-name regex:"instance i"# where $i$ is the running index.
+One can then tell from the source code view which kernel is being profiled.
+It may also be possible to pass the kernel name to \verb #parallel_for# in SYCL as a template argument.
+The documentation hints at this, but investigating it has been left for future work.\todo{This turned out easy to do}
 
-Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated. We have summarized the preliminary results in table \ref{tab:openqcd_perf}. The difference varies between the kernels we studied, from a factor of 2 to a factor of 6. We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel. NSight Compute suggests the kernels are bottlenecked by memory throughput. A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory. The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code. It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary. This requires further study and optimization.\todo{Add what we found. Occupancy vs register pressure seems to be the main indicator}
+Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
+We have summarized the preliminary results in table \ref{tab:openqcd_perf}.
+The difference varies between the kernels we studied, from a factor of 2 to a factor of 6.
+We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel.
+NSight Compute suggests the kernels are bottlenecked by memory throughput.
+A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory.
+The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code.
+It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
+This requires further study and optimization.\todo{Add what we found. Occupancy vs register pressure seems to be the main indicator}
 
 \subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
