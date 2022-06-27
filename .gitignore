@@ -304,3 +304,4 @@ TSWLatexianTemp*
 stylua.toml
 .dialect.utf-8.add*
 main.pdf
+!*.jpeg
