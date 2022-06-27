@@ -1,11 +1,12 @@
 %!TEX root = ../main.tex
+% chktex-file 13
 
 \subsection{AREPO}\label{sec:arepo}
 Arepo is a massively parallel astrophysics code for the simulation of gravitational N-body systems and magnetohydrodynamics, both on Newtonian as well as cosmological backgrounds.
 There are a number of versions in the community, originating from a common closed-source code base.
 A version with reduced functionality was made publicly available under GPLv3\cite{weinberger_arepo_2020, springel_arepo_nodate}.
 Different research groups use code bases derived from the closed source version, including the Sijaki group at the University of Cambridge.
-This code \cite{sijaki_arepo_nodate}, which was part of the DiRAC3 procurement, acceptance testing and technical commissioning, forms the basis of porting efforts to be undertaken within the course of this project.
+This code~\cite{sijaki_arepo_nodate}, which was part of the DiRAC3 procurement, acceptance testing and technical commissioning, forms the basis of porting efforts to be undertaken within the course of this project.
 
 In Arepo, the computational domain is discretized using a fully adaptive, dynamic unstructured Voronoi mesh, which is moving with the fluid in a quasi-Lagrangian way and that is paired with a finite volume approach for the hydrodynamics.
 Arepo is written in C, parallelized with MPI and some of the code bases, including the one used in this project, have additionally OpenMP shared memory parallelization.
@@ -30,7 +31,7 @@ Even on this small single-node test case this already reduces the run time of th
 	\subfloat{ \includegraphics[clip,width=\textwidth]{arepo_blocking.png}}
 	\subfloat{ \includegraphics[clip,width=\textwidth]{arepo_nonblocking.png}}
 	\caption{Significant reduction of MPI Busy Wait Time (yellow) in the lower VTune Profiler graphic compared to the top version where blocking communication was used. Shown for a random selection of ranks}
-	\label{fig:arepo_mpicom}
+	\label{fig:arepo_mpicom} % chktex 24
 \end{figure}
 
 Second profiling outcome and original motivation for this analysis was to understand the distribution of run time across the different parts of a time step and subsequently to identify suitable candidates for GPU porting.
