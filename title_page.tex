@@ -1,0 +1,10 @@
+%!TEX root = ./main.tex
+% vim: nospell
+% chktex-file 1
+
+\newmaketitle % uses a different vertical space (vs the standard \maketitle)
+% Insert Logo at desired location on title page
+\tikz [remember picture, overlay] %
+\node [shift={(0cm,-20mm)}] at (current page.north) %
+[anchor=north] %
+{\includegraphics[scale=0.1]{dirac_logo}};

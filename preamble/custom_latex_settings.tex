@@ -1,0 +1,30 @@
+%!TEX root = ../main.tex
+% vim:nospell ft=tex
+
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.7}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.66}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.66}
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+
+% https://tex.stackexchange.com/questions/50830/do-i-have-to-care-about-bad-boxes/50850#50850
+\tolerance=1414
+\hbadness=1414
+\emergencystretch=1.5em
+\hfuzz=0.5pt
+\vfuzz=\hfuzz  % chktex 1
+\raggedbottom  % chktex 1
+\hyphenpenalty=750
+\frenchspacing
+\binoppenalty=1000 % default 700
+\relpenalty=800     % default 500
+\interfootnotelinepenalty=10000
+% \clubpenalty=10000
+% \widowpenalty=10000
+
+% \overfullrule=2cm

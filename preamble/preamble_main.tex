@@ -1,0 +1,100 @@
+%!TEX root = ../main.tex
+% vim:nospell
+
+\directlua{pdf.setminorversion(7)}  % chktex 36
+% \RequirePackage[debrief]{silence}
+\RequirePackage[l2tabu, orthodox]{nag}
+
+% \begingroup\newif\ifmy % chktex 1
+% \IfFileExists{./\jobname.xmpdata}{}{\mytrue} % https://tex.stackexchange.com/questions/98203/can-i-test-if-a-file-exists
+% \ifmy\begin{filecontents}{\jobname.xmpdata}
+%         \input{preamble/metadata}
+%     \end{filecontents}
+% \fi\endgroup
+
+% These options are passed to the relevant packages when we load them later explicitly with \usepackage (or when some other package loads them implicity as their dependencies).
+% Using PassOptionsToPackage is the idiomatic way to pass options to latex packages. This is a superior alternative to \usepackage[option]{packagename}  % see https://texfaq.org/FAQ-optionclash
+
+%% Uncomment the following package options as needed (packages are not loaded though)
+% \PassOptionsToPackage{title, titletoc}{appendix}
+% \PassOptionsToPackage{nameinlink}{cleveref}
+% \PassOptionsToPackage{inline}{enumitem}
+% \PassOptionsToPackage{bottom}{footmisc}
+% \PassOptionsToPackage{nomain, acronym, symbols, stylemods={tree}, numberedsection=nameref}{glossaries-extra}
+% \PassOptionsToPackage{nomain, acronym, symbols, record, nonumberlist, stylemods={tree},style=treegroup,postdot}{glossaries-extra}
+% \PassOptionsToPackage{section}{placeins}
+
+% Adjust options as per requirements
+\PassOptionsToPackage{british}{babel}
+\PassOptionsToPackage{backend=biber, style=trad-plain, sorting=none, citestyle=numeric-comp, maxbibnames=50, url=true, doi=true, eprint=false}{biblatex}
+\PassOptionsToPackage{depth=3, open=true, openlevel=0, numbered=true}{bookmark}
+\PassOptionsToPackage{margin=10pt, font=small, labelfont={bf}, labelsep=quad}{caption}
+\PassOptionsToPackage{draft}{fixme} % ok to have fixme and todonotes (see a few lines below). No packages are loaded here. This merely specifies what options to pass if packages get loaded later on.
+\PassOptionsToPackage{no-math, quiet}{fontspec}
+\PassOptionsToPackage{luatex, paper=a4paper, hmarginratio=1:1, vmarginratio=1:1, scale=0.765}{geometry}
+\PassOptionsToPackage{all}{hypcap}
+\PassOptionsToPackage{pdfencoding=auto,psdextra}{hyperref}
+\PassOptionsToPackage{hyphenation, lastparline, nosingleletter}{impnattypo}
+\PassOptionsToPackage{frac, vfrac, multskip}{mathfixs}
+\PassOptionsToPackage{final, activate={true, nocompatibility}, factor=1100, stretch=10, shrink=10, babel=true,tracking=true,babel=true}{microtype}
+\PassOptionsToPackage{defaultlines=2, all}{nowidow}
+\PassOptionsToPackage{british}{selnolig}
+\PassOptionsToPackage{separate-uncertainty = true, multi-part-units=single, detect-all}{siunitx}
+\PassOptionsToPackage{textsize=scriptsize,textwidth=2.25cm}{todonotes}  % ok to have fixme (see a few lines above) and todonotes. No packages are loaded here. This merely specifies what options to pass if packages get loaded later on.
+\PassOptionsToPackage{normalem}{ulem}
+\PassOptionsToPackage{warnings-off={mathtools-colon,mathtools-overbracket,mathtools-underbracket}}{unicode-math}
+\PassOptionsToPackage{table}{xcolor}
+
+\documentclass[12pt,a4paper]{article}
+
+%%%%%%%%%% list of packages to be loaded %%%%%%%%%%
+
+\usepackage{shellesc}
+\input{preamble/generic_packages}        % general packages for a typical technical report (LuaTeX-compatible); loads the biblatex package
+\input{preamble/float_related_packages}  % table/images/caption related packages (latex float handling)
+\input{preamble/math_packages}           % All math-related packages particularly loads 'unicode-math' (which itself loads fontspec)
+
+\usepackage{unicode-math} % which loads 'fontspec' (must be loaded only after graphicx and babel); https://tex.stackexchange.com/questions/188222/problem-with-babel-and-fontspec; no-math option (math-handling is left to unicode-math); silent to suppress all warnings (even in log file)
+\input{preamble/custom_cmds_unicode_fontselection} % choose text, math fonts & monospaced fonts here
+
+\usepackage{ragged2e}     % 'ragged2e' should be loaded after the body font & size have been established
+\usepackage{microtype}    % for 'microtype' if using the option 'babel=true', babel must be loaded before microtype; microtype must be loaded after font selection (i.e. after fontspec/unicode-math)
+
+\usepackage{selnolig}     % luatex package; load after babel
+
+\usepackage{csquotes}     % The fvextra package is loaded by 'minted', so you should load 'minted' before 'csquotes'; 'csquotes' must be loaded after biblatex
+
+\usepackage{listings}
+\input{preamble/hyperref_related_packages}  % hyperxmp, hyperref, nameref, algorithm, hypcap, bookmark, glossaries, cleveref, showframe etc.
+
+\usepackage{orcidlink}    % loads hyperref and tikz
+
+\usepackage{impnattypo}   % luatex package
+\usepackage{nowidow}
+
+\usepackage{xurl}         % to be loaded after biblatex if biblatex interaction is needed
+
+%---------- end of package loading ---------%
+
+
+%---------- begin custom commands ----------%
+
+% \input{preamble/colors_for_doc}
+\input{preamble/custom_cmds_graphics}
+% \input{preamble/custom_cmds_pkg_silence}
+\input{preamble/custom_cmds_bibliography}     % the 'bib' file goes in here
+% \input{preamble/custom_cmds_pkg_caption}
+\input{preamble/custom_cmds_pkg_cleveref}
+\input{preamble/custom_cmds_pkg_csquotes}
+\input{preamble/custom_cmds_pkg_fancyhdr}
+% \input{preamble/custom_cmds_pkg_glossaries.tex}
+\input{preamble/custom_cmds_pkg_microtype.tex}
+\input{preamble/custom_cmds_pkg_todonotes}
+% \input{preamble/custom_cmds_pkg_ulem}
+\input{preamble/custom_cmds_tabularmaterial}
+\input{preamble/custom_genpurpose_cmds}
+\input{preamble/custom_latex_settings}        % adjusts penalites & other settings for tex's page layout algorithm
+\input{preamble/custom_maketitle_cmd}
+
+%---------- end custom commands ----------%
+\setstretch{1.348361657291667}

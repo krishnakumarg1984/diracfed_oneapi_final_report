@@ -1,0 +1,22 @@
+%!TEX root = ../main.tex
+% vim:nospell ft=tex
+
+%%%%% Cross-reference formatting customised to IEEE style %%%%%%%
+
+% \Crefname{type}{singular}{plural}
+\crefname{equation}{}{}
+\crefname{figure}{Fig.}{Fig.}
+
+% \crefrangeformat{equation}{eqs.~(#3#1#4)--(#5#2#6)}
+
+\newcommand{\crefrangeconjunction}{--}
+% \crefrangeformat{equation}{eqs.~(#3#1#4)--(#5#2#6)}
+
+% https://tex.stackexchange.com/questions/235516/cleveref-and-pdf-bookmark
+\pdfstringdefDisableCommands{\let\Cref\autoref}
+
+% https://tex.stackexchange.com/questions/251491/math-symbol-in-section-heading
+\pdfstringdefDisableCommands{\def\varepsilon{\textepsilon}}
+
+% https://tex.stackexchange.com/questions/193947/texorpdfstring-for-a-full-book
+\pdfstringdefDisableCommands{\let\ensuremath\@gobble}

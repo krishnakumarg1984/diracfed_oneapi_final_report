@@ -1,0 +1,83 @@
+%!TEX root = ../../main.tex
+% vim:nospell ft=tex
+
+% \makeglossaries  % IEEE TSTC doesn't explictly require a nomenclature list
+% \preto\section{\glsresetall} % expand acronyms every chapter https://tex.stackexchange.com/questions/435617/glossaries-expand-acronyms-for-first-time-use-within-each-chapter/435680#435680
+\glssetcategoryattribute{acronym}{nohyperfirst}{true} % no hyperlink on first use for entries with category=acronym % https://tex.stackexchange.com/questions/434160/line-break-long-glossaries-entry-when-using-hyperref-and-latex-dvips-ps2pdf
+\setabbreviationstyle[acronym]{long-short} % applicable only for glossaries-extra.sty
+% always set the abbreviation style before \GlsXtrLoadResources
+
+\GlsXtrLoadResources[
+src={preamble/glossary_definitions/acronyms.bib},%
+charset={utf8},
+sort={en-US},% sort according to this locale
+selection={all},% select all entries in the .bib files
+type=acronym,% put these entries in the 'acronym' glossary
+set-widest,% needed for 'alttree' styles
+save-locations=false,% don't save locations
+replicate-fields={short=name} % https://tex.stackexchange.com/questions/481948/list-of-acronyms-alignment-error-using-bib2gls
+]
+
+\GlsXtrLoadResources[
+src={preamble/glossary_definitions/latin_symbols.bib},%
+charset={utf8},
+sort={letter-lowerupper},
+type=symbols,
+selection={all},
+category={same as entry},% set the category to the entry type
+group={latin},% assign group label
+set-widest,% needed for 'alttree' styles
+save-locations=false
+]
+
+\newglossary*{greeksymbols}{greeksymbols}
+\GlsXtrLoadResources[
+src={preamble/glossary_definitions/greek_symbols.bib},%
+charset={utf8},
+sort={letter-lowerupper},
+type=greeksymbols,% put these entries in the appropriate glossary
+selection={all},
+category={same as entry},% set the category to the entry type
+group={greek},% assign group label
+set-widest,% needed for 'alttree' styles
+save-locations=false% don't save locations
+]
+
+% \GlsXtrLoadResources[
+% src={preamble/glossary_definitions/generic_symbols.bib},%
+% charset={utf8},
+% sort={none},
+% type=symbols,
+% selection={all},
+% category={same as entry},% set the category to the entry type
+% group={generic},% assign group label
+% set-widest,% needed for 'alttree' styles
+% save-locations=false
+% ]
+% % \input{preamble/glossary_definitions/acronyms.tex} % load the acronym entries
+% % \loadglsentries{preamble/acronyms}
+
+% assign titles to group labels:
+\glsxtrsetgrouptitle{latin}{\textnormal{\itshape A. Roman}} % chktex 1, chktex 6
+\glsxtrsetgrouptitle{greek}{\textnormal{\itshape B. Greek}} % chktex 1, chktex 6
+\glsxtrsetgrouptitle{generic}{\textnormal{\itshape C. Subscripts}} % chktex 1, chktex 6
+
+% \glssetwidest{consectetuer}
+% https://www.dickimaw-books.com/gallery/glossaries-styles/
+\glsfindwidesttoplevelname  % chktex 1
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \setglossarypreamble[acronym]{\small} % IEEE TSTC (optional) nomenclature font size
+% \renewcommand*{\glstextformat}[1]{\textcolor{black}{#1}} % link coloring to match normal text, ie black. Has been set using hyperref custom commands
+
+% Random trials below%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \renewcommand*{\glossaryheader}{}%
+% \renewcommand*{\glsgroupheading}[1]{\textnormal{\glsgetgrouptitle{##1}}}%
+% \renewcommand*{\glsgroupheading}[1]{\emph{#1}}
+% \glssetcategoryattribute{symbols}{glossdescfont}{emph}
+% \glssetcategoryattribute{symbols}{glossnamefont}{emph}
+% \glssetcategoryattribute{symbol}{glossdescfont}{emph}
+% \glssetcategoryattribute{symbol}{glossnamefont}{emph}
+% % \renewcommand{\glsnamefont}[1]{\textsf{#1}} %Change acronym name font
+% \renewcommand{\glsnamefont}[1]{\textsf{#1}} %Change acronym name font

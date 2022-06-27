@@ -1,0 +1,63 @@
+%!TEX root = ../main.tex
+% vim:nospell
+% chktex-file 26
+
+\setmainfont{LibertinusSerif}[%
+	Extension         = .otf,
+	% Path              = ./fonts/,
+	UprightFont       = *-Regular,
+	BoldFont          = *-Bold,
+	ItalicFont        = *-Italic,
+	BoldItalicFont    = *-BoldItalic,
+	Numbers           = {Proportional, Lining},
+	Ligatures         = {TeX, Common, Required},
+	SmallCapsFeatures = {Letters = SmallCaps},
+	% Fractions         = On,
+	Kerning           = {Uppercase, On},
+	% FontFace       = {sb}{n}{*-Semibold},
+	% FontFace       = {sb}{it}{*-SemiboldItalic},
+]%
+
+\setsansfont{LibertinusSans}[%
+	Extension         = .otf,
+	% Path              = ./fonts/,
+	UprightFont       = *-Regular,
+	BoldFont          = *-Bold,
+	ItalicFont        = *-Italic,
+	Numbers           = {Proportional, Lining},
+	Ligatures         = {TeX, Common, Required},
+	SmallCapsFeatures = {Letters = SmallCaps},
+	% Fractions         = On,
+	Kerning           = {Uppercase, On},
+]%
+
+% \setmainfont[Numbers={Proportional},Ligatures={TeX, Common%, Historic, Contextual, Rare, Discretionary
+% }]{Libertinus Serif}
+% \setsansfont{Libertinus Sans}
+
+\setmonofont{Latin Modern Mono}
+
+% % https://tex.stackexchange.com/questions/103379/minionpro-semibold-medium
+% \DeclareRobustCommand\sbseries{\fontseries{sb}\selectfont}
+% \DeclareTextFontCommand{\textsb}{\sbseries}
+
+\defaultfontfeatures{ Scale = MatchLowercase }
+\defaultfontfeatures[\rmfamily]{ Scale = 1}
+
+% \setmathfont[bold-style = ISO]{LibertinusMath-Regular.otf} % https://github.com/libertinus-fonts/libertinus/issues/20
+\setmathfont{LibertinusMath-Regular}[%
+	Extension  = .otf,
+	% Path       = ./fonts/,
+	bold-style = ISO, % https://github.com/libertinus-fonts/libertinus/issues/20
+]%
+
+% \setmathfont{libertinusmath-bold}[%
+% Extension  = .otf,
+% Path       = ./fonts/,
+% bold-style = ISO, % https://github.com/libertinus-fonts/libertinus/issues/20
+% version    = bold,
+% ]%
+
+% \setmathfont[math-style=upright,range={`e,`i}]{Latin Modern Math}
+% \setmathfont[range={\mathunder,\triangleq},Scale=MatchUppercase]{STIX2Math.otf}
+% \setmathfont[range = {\mathunder,\triangleq,\underbrace},Scale = MatchUppercase]{Latin Modern Math}

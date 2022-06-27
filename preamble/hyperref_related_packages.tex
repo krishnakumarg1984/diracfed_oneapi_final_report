@@ -1,0 +1,75 @@
+%!TEX root = ../main.tex
+% vim: nospell
+
+\usepackage{totpages}   % count pages in a document, and report last page number
+\input{preamble/custom_cmds_pkg_totpages}
+
+\usepackage{catchfile}  % catch an external file into a macro
+\input{preamble/custom_cmds_pkg_catchfile}
+
+\usepackage{trimspaces}
+\input{preamble/custom_cmds_pkg_trimspaces}
+
+\usepackage{hyperxmp} % comment out if using the pdfx package
+\usepackage{hyperref} % comment out if using the pdfx package
+
+\hypersetup{%
+	pdfauthor          = {Christopher Edsall, Kacper Kornet, Stefanie Reuter, Thomas Kappas, Tuomas Koskela, Krishnakumar Gopalakrishnan, Alexander Wade, Ioannis Zacharoudiou, Jon McCullough, Shunzhou Wan, James Richings},
+	pdfcontactaddress  = {DiRAC project office, Science and Technology Facilities Council, UK},
+	pdfcontactcity     = {Edinburgh},
+	pdfcontactcountry  = {United Kingdom},
+	pdfcontactemail    = {cje57 [at] cam [dot] ac [dot] uk},
+	pdfcontactregion   = {Cambridge},
+	pdfcontacturl      = {http://dirac.ac.uk, dirac-support@epcc.ed.ac.uk, mailto:c.jenner@ucl.ac.uk},
+	pdfcreator         = {LuaTeX with hyperref},
+	pdfkeywords        = {\ManuscriptKeywords},
+	pdflang            = {en-GB},
+	pdfsource          = {},  % a rarely needed option, this overrides the name of the LATEX source file.pdfsourceIt defaults to\jobname.texbut can be replaced by any other string.  If pdfsource is given an empty argument, no document source will be specified at all.
+	pdfsubject         = {\ManuscriptKeywords},
+	pdfsubtitle        = {DiRAC Federation Project WP 3.2.1},
+	pdftitle           = {\ManuscriptTitle},
+	pdftype            = {Technical report},
+	pdfversionid       = {1.0},
+	% pdfversionid       = {\IfPackageLoaded{gitver}{\gitVer}{\documentversion}},
+	anchorcolor        = black,
+	breaklinks         = true,
+	citecolor          = black, %[RGB]{0,68,136}, % https://personal.sron.nl/pault/#fig:scheme_highcontrastpault/#fig:scheme_highcontrast
+	colorlinks         = true,
+	final              = true,
+	linkcolor          = black, %[RGB]{0,68,136}, % https://personal.sron.nl/pault/#fig:scheme_highcontrastpault/#fig:scheme_highcontrast
+	linktocpage        = true,
+	pdfborderstyle     = {/S/U/W 1},
+	pdfcenterwindow    = true,
+	pdfdisplaydoctitle = true,
+	pdffitwindow       = true,
+	pdfstartview       = {Fit},
+	pdftoolbar         = true,
+	plainpages         = false,
+	pdfencoding        = auto,
+	unicode            = true,
+	urlcolor           = black, %[RGB]{0,68,136}, % https://personal.sron.nl/https://personal.sron.nl/pault/#fig:scheme_highcontrastpault/#fig:scheme_highcontrast
+}%
+
+
+% ---------- packages to be loaded after hyperref ----------%
+
+\usepackage{hypcap}      % to be loaded after hyperref. fix hyperref links to jump directly to table or figure
+
+\usepackage{pdftexcmds}  % not required if using pdfx package
+
+% \usepackage{glossaries-extra} % should be loaded after hyperref, but before cleveref % consider 'symbols' option
+
+\usepackage{hypdestopt}  % seems to have problems with pdfx package?
+\usepackage{bookmark}    % improves bookmarks handling. % More features & faster updated bookmarks.
+\usepackage{cleveref}
+
+% \usepackage{showframe}
+% \usepackage[noframe]{showframe}
+\newcommand{\blackurl}{\hypersetup{urlcolor=black}}%
+\newcommand{\regularurl}{\hypersetup{urlcolor=[RGB]{0,68,136}}}%
+
+% https://tex.stackexchange.com/a/330980
+\pdfstringdefDisableCommands{%
+\def\\{}%
+\def\texttt#1{<#1>}%
+}

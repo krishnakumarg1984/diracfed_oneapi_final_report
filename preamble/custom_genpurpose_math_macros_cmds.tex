@@ -1,0 +1,29 @@
+%!TEX root = ../main.tex
+% vim:nospell ft=tex
+% chktex-file 1
+
+%---------- inline/display math macros ----------%
+% \newcommand*\mean[1]{\overline{#1}}
+
+% \DeclarePairedDelimiter\abs{\lvert}{\rvert}
+% \DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+% \DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\let\mathbbalt\mathbb  % unicode-math changes mathbb to mathbbalt by default % https://tex.stackexchange.com/questions/360607/unicode-math-but-ordinary-blackboard-bold/360637#360637
+
+% ---------- 'increasing spacing between matrix rows' -------------------- %
+% https://tex.stackexchange.com/questions/14071/how-can-i-increase-the-line-spacing-in-a-matrix
+
+% a redefinition of an internal amsmath LaTeX macro for customizing line spacing
+% in  specific matrices  arbitrarily  as  desired: After  putting  this in  your
+% preamble, you can write \begin{pmatrix}[1.5] vary  the value as you like, with
+% pmatrix, vmatrix, bmatrix  and alike, or use it without  the optional argument
+% as usually.
+
+% \makeatletter
+% \renewcommand*\env@matrix[1][\arraystretch]{%
+%   \edef\arraystretch{#1}%
+%   \hskip -\arraycolsep
+%   \let\@ifnextchar\new@ifnextchar
+% \array{*\c@MaxMatrixCols c}}
+% \makeatother

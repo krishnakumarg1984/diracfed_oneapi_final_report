@@ -1,0 +1,45 @@
+%!TEX root = ../main.tex
+% vim:nospell ft=tex
+% chktex-file 1
+
+% these custom commands  are general purpose definitions that are  suitable in a
+% typical scientific	document. Some	of them  are pure  latex while	others use
+% external packages
+
+\newcommand\blankpage{
+	\null
+	\thispagestyle{empty}
+	\addtocounter{page}{-1}
+	\newpage
+}
+
+%---------- for text and other typographical elements ----------%
+\newcommand{\eg}{\textit{e}.\textit{g}.}
+\newcommand{\etal}{\textit{et~al}.}
+\newcommand{\ie}{\textit{i}.\textit{e}.,}
+\newcommand{\viz}{\textit{viz}. }
+
+\setlength\parskip{0.75\baselineskip plus0.1\baselineskip  minus0.1\baselineskip}
+
+% https://tex.stackexchange.com/questions/23487/how-can-i-get-roman-numerals-in-text
+% \makeatletter
+% \newcommand*{\romanletter}[1]{\expandafter\@slowromancap\romannumeral #1@}
+% \makeatother
+
+% improved handling of sectioning commands with titlesec package
+% \setcounter{secnumdepth}{3} % organisational level that receives a numbers
+% \setcounter{tocdepth}{3}		% print table of contents for level 3
+
+% \setlength{\columnsep}{20pt} % space between columns in two column mode; default 10pt quite narrow
+
+% \renewcommand{\footnoterule}{%
+%			\kern -3pt
+%			\hrule width 0.25\textwidth height 0.5pt
+%			\kern 2pt
+% }
+
+% % https://tex.stackexchange.com/questions/29916/how-to-place-a-footnote-inside-a-float-environment
+% \newcommand{\mpfootnotes}[1][1]{
+%			\renewcommand{\thempfootnote}{\thefootnote}
+%			\addtocounter{footnote}{-#1}
+% \renewcommand{\footnote}{\stepcounter{footnote}\footnotetext[\value{footnote}]}}

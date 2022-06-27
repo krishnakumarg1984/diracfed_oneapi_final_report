@@ -1,0 +1,48 @@
+%!TEX root = ../main.tex
+% vim:nospell
+
+% The 'microtype' package is not loaded in this file, since it must be loaded after the 'babel' package (which itself is to be loaded after the 'fontspec' package)
+
+\usepackage{authblk}
+
+\usepackage{babel}         % with the 'british' option, we get OUP hyphenation material for free
+\usepackage{biblatex}      % strong dependence on csquotes
+
+\usepackage{checkend}
+
+\usepackage{fancyhdr}
+\usepackage{filemod}
+% \usepackage{fixme}
+
+\usepackage{geometry}
+
+\usepackage{labelschanged}
+
+\usepackage{setspace}      % Used to define line spacing
+
+% \usepackage{siunitx}
+% \input{preamble/custom_cmds_pkg_siunitx}
+
+\usepackage{todonotes}     % whoa! loads array,color,colortbl,pdfcolmk,xcolor,tikz,pgf,pgffor,pgfrcs,pgfcomp-*,graphicx,keyval,graphics,trig,pgfsys,xcolor,pgfbasedecorations,pgfbasesnakes,
+
+
+% ------- other unused general packages (but potentially useful in a typical article/report) ----------
+% \usepackage{addlines}
+% \usepackage{blindtext}
+% \usepackage{cmdtrack}
+% \usepackage{etoolbox}   % not really required if using glossaries package, since this package then gets loaded automatically
+% \usepackage{fnpct}
+% \usepackage{footnote}
+% \usepackage{fullpage}
+% \usepackage{layouts}    % helpful for computing textwidth, textheight etc
+% \usepackage{lscape}
+% \usepackage{luabibentry}
+% \usepackage{makebox}
+% \usepackage{needspace}
+% \usepackage{nolbreaks}
+% \usepackage{pdflscape}
+% \usepackage{soulutf8}
+% \usepackage{subfiles}
+% \usepackage{ulem}
+% \usepackage{varwidth}
+% \usepackage[table]{xcolor} % loaded by pdfx package (if pdfx is loaded). Note that the user cannot explicitly load the colortbl package either before or after when using xcolor. xcolor is also loaded by the todonotes package

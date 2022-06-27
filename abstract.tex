@@ -1,0 +1,9 @@
+%!TEX root = ./main.tex
+
+In preparation for the forthcoming exascale HPC systems which will almost certainly consist of heterogeneous components --- both CPUs and GPUs --- DiRAC has undertaken an exploratory project to document the experiences of porting some representative codes to one or other of two promising programming models: SYCL or OpenMP offload.
+The programming models are supported by Intel OneAPI and other commercial and open source compilers.
+Five candidate codes (OpenQCD, OpenMM, HemeLB, dGpoly3D, and AREPO) were selected, profiled and kernels were ported.
+An absolute performance comparison between programming models was not a goal of this initial work.
+We report the experience of a group of research software engineers, most of whom were novices in SYCL or OpenMP GPU offload programming.
+
+\newpage
