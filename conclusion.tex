@@ -1,6 +1,8 @@
 %!TEX root = ../main.tex
 
-A number of codes underwent an initial port to SYCL/OneAPI by a group of research software engineers mostly new to the programming model. The source to source translation tool \texttt{dpct} worked quite well for most CUDA codes, the exception being those projects that used code generation to generate the CUDA source where the tool needed to be run on the generated source. A solution for the portability issue introduced by the tool inserting the \texttt{dpct::} namespace was found.
+A number of codes underwent an initial port to SYCL/OneAPI by a group of research software engineers mostly new to the programming model.
+The source to source translation tool \texttt{dpct} worked quite well for most CUDA codes, the exception being those projects that used code generation to generate the CUDA source where the tool needed to be run on the generated source.
+A solution for the portability issue introduced by the tool inserting the \texttt{dpct::} namespace was found.
 
 The tools, documentation, and learning resources are sufficient to get a small group of developers up to speed and productive in the programming model.
 
