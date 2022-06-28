@@ -15,16 +15,16 @@ With OpenCL support it is possible to target Intel GPUs and run OpenMM out of th
 This process is straightforward and comparable to other platforms.
 For the readers reference OpenMM can be installed using the following command:
 
-\begin{lstlisting}
+\begin{verbatim}
 conda install -c conda-forge openmm
-\end{lstlisting}
+\end{verbatim}
 
 OpenMM was installed on Intel DevCloud, and targeting the XeMax GPU the following simple benchmark was run:
 
-\begin{lstlisting}
+\begin{verbatim}
 python benchmark.py --test=pme --platform=OpenCL
     --precision=single --seconds=3 --heavy-hydrogens
-\end{lstlisting}
+\end{verbatim}
 
 This yielded a simulation speed of $107 ns/day$.
 For comparison, a Nvidia Quadro M1000M (a 2015 GPU with 1.6 times the thermal design power) provides simulation speeds of $82 ns/day$ in the same benchmark.
@@ -42,11 +42,28 @@ The code for the bonded forces contains the same challenges as the full source c
 
 The GPU specific code in OpenMM uses what is referred to as a common compute framework.
 The main kernels of the code are written in a platform agnostic form and these are then assembled at run time for the target platform.
-This dynamic code generation presented significant challenges to porting OpenMM to SYCL.
+This run time code generation presented significant challenges to porting OpenMM to SYCL.
 The first challenge was that the application of conversion tools such as the Intel DPC++ Compatibility Tool was difficult.
-We found it was not possible to convert the CUDA source code to SYCL in our testing as the compatibility tool could not recognises and translate the unassembled kernel.
+We found it was not possible to convert the CUDA source code to SYCL in our testing as the compatibility tool is not compatible with CUDA run time compilation. If parts of the CUDA run time compilation API are passed to the compatibility tool errors are generated e.g.
+
+\begin{verbatim}
+
+  /*
+DPCT1007:0: Migration of this CUDA API is not supported by the Intel(R) DPC++
+Compatibility Tool.
+*/
+  nvrtcCreateProgram(&prog,      // prog
+                     saxpy,      // buffer
+                     "saxpy.cu", // name
+                     0,          // numHeaders
+                     NULL,       // headers
+                     NULL);      // includeNames
+
+\end{verbatim}
+
+
 Secondly as of SYCL2020 the OpenCL interoperability APIs have been removed.
-This means that the methods used for dynamic code generation in OpenMM would need more work to translate to SYCL by hand than would have been needed previously.
+This means that the methods used for dynamic code generation in OpenMM might need more work to translate to SYCL by hand than would have been needed previously.
 Since both automatic and manual translation of the dynamic code generation in OpenMM were not possible or labour intensive we instead opted to translate a kernel post dynamic generation.
 
 \subsubsection{Porting the Generated Bonded Force Kernel}\label{sec:openmm_porting_genbf_kernel}
@@ -55,7 +72,6 @@ For simplicity we chose to port the bonded force kernel, this computes forces pe
 As a starting point for this port we extracted the assembled CUDA kernel \verb!computeBondedForces()! from OpenMM.
 After modifying the code to allow this extracted kernel to run in isolation the kernel was then passed through the Intel DPC++ Compatibility Tool.
 Intel DPC++ Compatibility Tool was able to convert 100$\%$ of the code which could then be complied successfully without any modification.
-Whilst compilation occurred without issue on the Intel DevCloud compilation issues where encountered when compiling the code and targeting Nvidia hardware on other machines such as CSD3\footnote{\url{https://docs.hpc.cam.ac.uk/hpc/index.html}}
 
 \subsubsection{Performance of the Ported Code}\label{sec:openmm_performance}
 
@@ -68,11 +84,14 @@ Whilst compilation occurred without issue on the Intel DevCloud compilation issu
 With SYCL and CUDA versions of the bonded force kernel we compared the performance of these to codes.
 To make this comparison we used XeMax GPUs on the Intel DevCloud and a local Nvidia Quadro M1000M to compute the energies of progressively larger sets of bonds.
 These runs were timed and the resulting the data plotted in figure~\ref{fig:openmm}.
-All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}
+All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}. The results in figure~\ref{fig:openmm} demonstrate the code is running roughly as expected but more specific assertions about relative performance are not possible due to 1) the inequality of the hardware and 2) the lack of optimisation in SYCL code.
 
 \subsubsection{Further Work for Porting OpenMM}\label{sec:openmm_furtherwork}
 
 As has already been mentioned above there are two major parts of an OpenMM port to SYCL that have not addressed in this work these are 1) porting of all force kernels and 2) porting of dynamic code generation methods.
-Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority.
-With a definitive answer to if such dynamic generation is possible in SYCL2020 and if the methods available are compatible with OpenMM the remainder of the port may be easier.
-Dynamic generation may be possible via the kernel bundle methods in SYCL2020\footnote{\url{https://www.khronos.org/registry/SYCL/specs/sycl-2020/html/sycl-2020.html\#sec:interfaces.bundles}} but further investigation is required.
+Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority. The authors are aware of other codes which use run time compilation with SYCL (https://github.com/ginkgo-project/ginkgo) and so although porting OpenMM to SYCL would take significant effort to perform manually we are not aware of any reasons why it would not be possible.
+
+
+\subsubsection{Effort Required for Porting OpenMM}\label{sec:openmm_effort}
+
+The authors of this section where novice to CUDA programming and new to SYCL programming as such the results here should represent the effort required for a port to be achieved by user new to GPU programming. Porting of the bonded kernel can be considered as three tasks 1) learning sufficient CUDA to understand the problem and 2) converting the extracted code using the Intel compatibility tool. The authors estimate that task 1) was the most time consuming with a rough estimate of 1-2 PM (person-month) but task 2), once the CUDA kernel was in hand and well understood, was much faster and took on the order of 0.25 PM. From the perspective of a GPU programming novice we comment that the porting of a single kernel from CUDA to SYCL was very straight forward provided the CUDA API in the code being ported is supported. We have found in this part of the work sections of the CUDA API that are not supported, namely nvrtc. Without the support of Intel compatibility tool it is the opinion of this author that the complexity to port a code such as OpenMM is well beyond what is possible for a novice.

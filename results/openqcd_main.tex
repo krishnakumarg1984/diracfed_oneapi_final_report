@@ -10,16 +10,6 @@ The main development is in C, with some functions heavily optimized using intrin
 This work builds upon previous DiRAC work, where the code was profiled and the main hotspot was identified as the Dirac-Wilkinson (DW) operator.
 The DW operator was ported to CUDA and a data layout optimization was performed to improve performance on V100 GPUs.
 
-\subsubsection{Testing}\label{testing_openqcd}
-
-The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
-We found generating the reference data difficult using the main CPU code based on\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
-However, We were able to recover the original reference data and verify the CUDA code.
-The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
-This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{Report on difficulties with Git LFS on GitHub}
-
-\todo{@Tuomas report on CI}
-
 \subsubsection{Porting approach}\label{sec:openqcd_porting}
 
 Since the DW operator was identified as the main hotspot in the code and a CUDA port had already been made, our approach was to follow Intel's Recommended Workflow illustrated in Figure~\ref{fig:intel-workflow}, starting from existing CUDA code, and use the Intel DPC++ Compatibility Tool (dpct) to generate DPC++ code from it.
@@ -53,7 +43,7 @@ The --gen-build-script flag was used to automatically generate a new Makefile fo
 
 After running dpct we got a list of warnings where dpct suggests attention is required from the developers.
 These are reasonably clear and additional information is available in the documentation.
-The warnings are listed in \url{https://github.com/UCL-ARC/openqcd-fastsum/issues/3}.\todo{Update links to the new repository}
+The warnings are listed in a closed issue on the GitHub repository\footnote{\url{https://github.com/UCL/openqcd-oneapi/issues/20}}.
 None of them required our immediate attention to compile and run the code.
 From the point of portability, we note that dpct warns us when workgroup sizes are hardcoded for a particular GPU architecture and recommends querying the device for its maximum workgroup size.
 
@@ -79,29 +69,44 @@ To compile the code targeting NVidia GPUs we had to use Intel's Open Source \ver
 
 In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in Section~\ref{sec:openqcd_porting}.
 In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend.
-The automatically generated Makefile did not work for the NVidia backend, and we manually modified it\footnote{\url{https://github.com/UCL-ARC/openqcd-fastsum/blob/3ac9c02357768d9e68500b7200cb3ea3094c52db/tests/cuda2/dpct_output/Makefile\#L17}}\todo{update links} to simply contain a target of the type
+The automatically generated Makefile did not work for the NVidia backend, and we manually modified it\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/42}} to simply contain a target of the type
 \begin{verbatim}
-nvidia: main.c dw_soa_sycl.cpp read_in.c
-        $(CC) $(INCLUDES) $(CFLAGS) $^ -o main.nvidia_gpu
+my_target: $(SRC_FILES)
+	$(CC) $(INCLUDES) $(CFLAGS) $^ -o $(EXEC_BASENAME).$@
 \end{verbatim}
-with the relevant flags in \verb #$(CFLAGS)# and a path to the header files in \verb #$(INCLUDES)#.
+with the source files listed in \verb #$SRC_FILES#, the relevant compiler flags in \verb #$(CFLAGS)# and a path to the header files in \verb #$(INCLUDES)#.
 
 \todo{@Tuomas Add compiling with HIPSycl}
 \todo{@Krishna Add (issues with) compiling with ComputeCPP}
 \todo{@Tuomas Add (issues with) compiling on AMD}
+
+\subsubsection{Testing}\label{testing_openqcd}
+
+The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
+We found generating the reference data difficult using the main CPU code based on\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
+However, we were able to recover the original reference data and verify the CUDA code.
+The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
+This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{@Krishna, Report on difficulties with Git LFS on GitHub}
+
+\todo{@Tuomas report on CI}
+
+\subsubsection{Continuous Integration}
+
+It is possible to install prebuilt binaries of both OneAPI and HipSYCL compilers from repositories relatively quickly, which enables us to use CI workflows during the development work. CI helps catch errors quickly, and ensure that code merged into the main development branch successfully builds and executes test cases. It is standard practice in indurstry and we warmly recommend it for scientific software projects. We chose to use GitHub Actions as the CI platform of our choice, due to good integration with the GitHub source repository and relatively friendly pricing rules, which allow us to run our CI jobs free of charge. In GitHub Actions, the user defines a workflow in a \verb #.yaml# file which can consist of any number of arbitrary steps. We implemented a simple workflow that runs the main executable on two data sets, using the OneAPI\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/oneapi.yml}} and HIPSYCL\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/hipsycl.yml}} compilers, on a CPU-only machine running the latest Ubuntu version available. It was not possible to test the GPU builds at this time. To install the OneAPI compiler, we followed this blog\footnote{\url{https://neelravi.com/post/oneapi-github-workflow/}} and Intel's instructions\footnote{\url{https://www.intel.com/content/www/us/en/develop/documentation/installation-guide-for-intel-oneapi-toolkits-linux/top/installation/install-using-package-managers/apt.html#apt}}. Installing the whole OneAPI package would take too long for the CI job, the main issue was finding the right packages for installing the \verb #dpcpp# compiler only. To install HIPSycl, we used instructions for installing from repositories from the developers\footnote{\url{https://github.com/illuhad/hipSYCL/blob/develop/install/scripts/README.md#installing-from-repositories}}.
 
 \subsubsection{Performance}\label{sec:openqcd_performance}
 
 To measure the performance on the NVidia A100 GPUs available on CSD3, we profiled the CUDA and the SYCL versions of the code with the NVidia NSight Compute profiler.
 NVidia tools seemed the only feasible option for profiling performance on NVidia devices.
 
-NSight compute works reasonably well on SYCL code.
+We found NSight compute works reasonably well on SYCL code.
 The main issue is that since the kernels executed on the GPU are generated from lambda functions in SYCL, the function names are not retained as kernel names.
 Instead, the profiled kernels have generic names that can be hard to decipher if the code contains multiple kernels.
-As a workaround for this issue, we noted that the demangled kernel names have a running index $1 \ldots N$ and it is possible to profile them individually by using \verb #ncu# flags \verb #--kernel-name-base demangled --kernel-name regex:"instance i"# where $i$ is the running index.  % chktex 18
-One can then tell from the source code view which kernel is being profiled.
-It may also be possible to pass the kernel name to \verb #parallel_for# in SYCL as a template argument.
-The documentation hints at this, but investigating it has been left for future work.\todo{This turned out easy to do}
+To avoid this issue, it is recommended to name the kernels using a class passed as a template argument to \verb #parallel_for#, e.g.
+\begin{verbatim}
+    q.parallel_for<class name_of_my_kernel>(...)
+\end{verbatim}
+Note, that the names given to kernels have to be unique, ie. not clash with names of functions or other code constructs.
 
 Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
 We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
@@ -111,12 +116,11 @@ NSight Compute suggests the kernels are bottlenecked by memory throughput.
 A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory.
 The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code.
 It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
-This requires further study and optimization.\todo{Add what we found. Occupancy vs register pressure seems to be the main indicator}
+This requires further study and optimization.\todo{@Tuomas Add what we found. Occupancy vs register pressure seems to be the main indicator}
 
 \subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
-\todo{@Krishna Report on Explicit vs Implicit memory movement in USM}
-\todo{Stretch goal: Buffers/accessors}
+\todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
 
 \begin{center}
 	\begin{table}
@@ -141,7 +145,7 @@ This requires further study and optimization.\todo{Add what we found. Occupancy 
 	\end{table}
 \end{center}
 
-\todo{Compare with HIPSycl performance on NVidia A100's}
+\todo{@Tuomas Update table with HIPSycl performance on NVidia A100's}
 
 \subsubsection{Ideas for Future Work}\label{sec:openqcd_future_work}
 
