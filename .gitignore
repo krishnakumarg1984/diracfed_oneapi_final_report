@@ -300,8 +300,8 @@ TSWLatexianTemp*
 # Uncomment the next line to have this generated file ignored.
 #*Notes.bib
 
+*.pdf
 !images/
 stylua.toml
 .dialect.utf-8.add*
-main.pdf
 !*.jpeg

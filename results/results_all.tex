@@ -1,8 +1,15 @@
 %!TEX root = ../main.tex
 
+\documentclass[../main]{subfiles}
+
+\begin{document}
+
 \section{Results}\label{sec:results}
-\input{results/openqcd_main}
-\input{results/openmm_main}
-\input{results/hemelb_main}
-\input{results/dgpoly3d_main}
-\input{results/arepo_main}
+
+\subfile{openqcd_main}
+\subfile{openmm_main}
+\subfile{hemelb_main}
+\subfile{dgpoly3d_main}
+\subfile{arepo_main}
+
+\end{document}

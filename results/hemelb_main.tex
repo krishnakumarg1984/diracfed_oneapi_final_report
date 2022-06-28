@@ -1,7 +1,10 @@
-%!TEX root = ../main.tex
 % chktex-file 13
 % chktex-file 44
 % chktex-file 24
+
+\documentclass[../main]{subfiles}
+
+\begin{document}
 
 \subsection{HemeLB}\label{sec:hemelb}
 
@@ -90,3 +93,5 @@ Furthermore, the memory transactions to/from the GPU global memory are reported 
 In this porting exercise, we have only examined HemeLB's main fluid collision kernel.
 With this proof-of-concept completed, the next step would be to work through the full version of the HemeLB code to fully port it to the DPC++ format.
 Being a mature code, conducting such a project port will more strongly test the capabilities to effectively port MPI-parallelised CUDA code to the OneAPI framework.
+
+\end{document}
