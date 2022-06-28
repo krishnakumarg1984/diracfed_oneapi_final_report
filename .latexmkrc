@@ -54,7 +54,7 @@ $pdf_mode=1;
 $postscript_mode=$dvi_mode = 0;
 $clean_ext.='%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
 $ENV{'TZ'}='Europe/London';
-@default_files = ('main.tex');
+# @default_files = ('main.tex');
 
 # add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
 add_cus_dep('acn', 'acr', 0, 'run_makeglossaries');

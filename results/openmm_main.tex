@@ -1,8 +1,11 @@
-%!TEX root = ../main.tex
 % chktex-file 13
 % chktex-file 24
 % chktex-file 10
 % chktex-file 17
+
+\documentclass[../main]{subfiles}
+
+\begin{document}
 
 \subsection{OpenMM}\label{sec:openmm}
 
@@ -94,4 +97,11 @@ Before continuing to port more force kernels it is the opinion of the authors th
 
 \subsubsection{Effort Required for Porting OpenMM}\label{sec:openmm_effort}
 
-The authors of this section where novice to CUDA programming and new to SYCL programming as such the results here should represent the effort required for a port to be achieved by user new to GPU programming. Porting of the bonded kernel can be considered as three tasks 1) learning sufficient CUDA to understand the problem and 2) converting the extracted code using the Intel compatibility tool. The authors estimate that task 1) was the most time consuming with a rough estimate of 1-2 PM (person-month) but task 2), once the CUDA kernel was in hand and well understood, was much faster and took on the order of 0.25 PM. From the perspective of a GPU programming novice we comment that the porting of a single kernel from CUDA to SYCL was very straight forward provided the CUDA API in the code being ported is supported. We have found in this part of the work sections of the CUDA API that are not supported, namely nvrtc. Without the support of Intel compatibility tool it is the opinion of this author that the complexity to port a code such as OpenMM is well beyond what is possible for a novice.
+The authors of this section were novices in CUDA programming and new to SYCL programming as such the results here should represent the effort required for a port to be achieved by user new to GPU programming.
+Porting of the bonded kernel can be considered as three tasks 1) learning sufficient CUDA to understand the problem and 2) converting the extracted code using the Intel compatibility tool.
+The authors estimate that task 1) was the most time consuming with a rough estimate of 1-2 PM (person-month) but task 2), once the CUDA kernel was in hand and well understood, was much faster and took on the order of 0.25 PM.
+From the perspective of a GPU programming novice we comment that the porting of a single kernel from CUDA to SYCL was very straight forward provided the CUDA API in the code being ported is supported.
+We have found in this part of the work sections of the CUDA API that are not supported, namely nvrtc.
+Without the support of Intel compatibility tool it is the opinion of this author that the complexity to port a code such as OpenMM is well beyond what is possible for a novice.
+
+\end{document}

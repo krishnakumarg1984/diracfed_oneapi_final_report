@@ -1,17 +1,18 @@
 \input{preamble/preamble_main}
 \input{frontmatter/frontmatter_main}
+\usepackage{subfiles}
 
 \begin{document}
 
-\input{title_page}
+\subfile{title_page}
 
-\input{abstract}
-\input{introduction}
-\input{candidate_code_selection}
-\input{methods}
-\input{results/results_all}
-\input{conclusion}
-\input{acknowledgements}
+\subfile{abstract}
+\subfile{introduction}
+\subfile{candidate_code_selection}
+\subfile{methods}
+\subfile{results/results_all}
+\subfile{conclusion}
+\subfile{acknowledgements}
 
 \setstretch{1.0}
 \printbibliography
