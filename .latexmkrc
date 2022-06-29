@@ -60,7 +60,7 @@ $clean_ext .=
 $ENV{'TZ'} = 'Europe/London';
 
 @default_files          = ('main.tex');
-@default_excluded_files = ('preamble/*.tex');
+@default_excluded_files = ( 'preamble/*.tex', 'frontmatter/*.tex' );
 
 # add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
 add_cus_dep( 'acn', 'acr', 0, 'run_makeglossaries' );
