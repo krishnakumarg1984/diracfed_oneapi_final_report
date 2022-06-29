@@ -5,11 +5,27 @@
 
 \begin{document}
 
-\newmaketitle % uses a different vertical space (vs the standard \maketitle)
-% Insert Logo at desired location on title page
-\tikz [remember picture, overlay] %
-\node [shift={(0cm,-20mm)}] at (current page.north) %
-[anchor=north] %
-{\includegraphics[scale=0.1]{dirac_logo}};
+% https://tex.stackexchange.com/a/75698
+% \newgeometry{top=1.35in,bottom=1in,right=0.5in,left=0.5in}
+\newgeometry{top=2.35in,bottom=1in,right=0.5in,left=0.5in}
+
+\makeatletter
+\begin{titlepage}
+	\centering
+	\includegraphics[scale=0.1]{dirac_logo}\\[10ex]
+	{\Huge \bfseries  \@title }\\[2ex]
+	{\large  \@author}\\[5ex]
+	\begin{center}
+		{\large \centering \@date}
+	\end{center}
+	\global\let\newpagegood\newpage
+	\global\let\newpage\relax
+\end{titlepage}
+% restore the \newpage command after creating the title page
+\global\let\newpage\newpagegood
+\makeatother
+
+% Ends the declared geometry for the titlepage
+\restoregeometry
 
 \end{document}
