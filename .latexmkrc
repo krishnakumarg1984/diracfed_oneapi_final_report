@@ -58,15 +58,9 @@ $postscript_mode = $dvi_mode = 0;
 $clean_ext .=
 '%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
 $ENV{'TZ'} = 'Europe/London';
-@default_files = (
-    'main.tex',                 'methods.tex',
-    'abstract.tex',             'conclusion.tex',
-    'introduction.tex',         'title_page.tex',
-    'acknowledgements.tex',     'introduction.tex',
-    'results/arepo_main.tex',   'results/dgpoly3d_main.tex',
-    'results/hemelb_main.tex',  'results/openmm_main.tex',
-    'results/openqcd_main.tex', 'results/results_all.tex'
-);
+
+@default_files          = ('main.tex');
+@default_excluded_files = ('preamble/*.tex');
 
 # add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
 add_cus_dep( 'acn', 'acr', 0, 'run_makeglossaries' );
