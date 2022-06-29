@@ -16,14 +16,18 @@ Arepo is written in C, parallelized with MPI and some of the code bases, includi
 To the best of our knowledge, there is currently no version of this code that can target accelerators with any of the computational kernels in the main time loop.
 
 \subsubsection{Running the code}
-Arepo depends on several libraries that are necessary for compilation. 
-    \begin{itemize}
-        \item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} GNU Scientific Library as a random number generator and for numerical integration.
-        \item{\textbf{GMP \footnote{\url{https://gmplib.org/}}:}} GNU Multiple Precision Artithmetic Library to calculate exact geometric predictions
-        \item{\textbf{FFTW3\footnote{\url{http://www.fftw.org/}}:}} Fastest Fourier Transform in the West is used in the particle-mesh algorithm
-        \item{\textbf{HDF5\footnote{\url{https://support.hdfgroup.org/HDF5/doc/H5.intro.html}}:}} Hierarchical Data Format is used as the standard input/output format in Arepo. 
-    \end{itemize}
-Arepo also needs a configuration and a parameter file for each example. The parameter File contains the run-time options whereas the configuration file specifies compile time settings. Special variables in the parameter file need to be modified for each platform, e.g. the maximum memory size, which should be around 95\% of the available RAM for every process or a variable that points to the correct data folder for initial condition files and output files. Most Arepo branches come with a testsuite of small examples to verify the code. Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data~\cite{Nelson_2015} publicly available can be used for longer test runs. 
+Arepo depends on several libraries that are necessary for compilation.
+\begin{itemize}
+	\item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} GNU Scientific Library as a random number generator and for numerical integration.
+	\item{\textbf{GMP \footnote{\url{https://gmplib.org/}}:}} GNU Multiple Precision Artithmetic Library to calculate exact geometric predictions
+	\item{\textbf{FFTW3\footnote{\url{http://www.fftw.org/}}:}} Fastest Fourier Transform in the West is used in the particle-mesh algorithm
+	\item{\textbf{HDF5\footnote{\url{https://support.hdfgroup.org/HDF5/doc/H5.intro.html}}:}} Hierarchical Data Format is used as the standard input/output format in Arepo.
+\end{itemize}
+Arepo also needs a configuration and a parameter file for each example.
+The parameter File contains the run-time options whereas the configuration file specifies compile time settings.
+Special variables in the parameter file need to be modified for each platform, e.g. the maximum memory size, which should be around 95\% of the available RAM for every process or a variable that points to the correct data folder for initial condition files and output files.
+Most Arepo branches come with a testsuite of small examples to verify the code.
+Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data~\cite{Nelson_2015} publicly available can be used for longer test runs.
 
 \subsubsection{Profiling with Vtune and Intel Trace Analyzer}
 In contrast to codes described above, where suitable kernels for GPU execution have already been identified in prior porting efforts, this selection process has to be done as an additional first step for this purely CPU-based code.
@@ -34,7 +38,7 @@ The first insight was that a significant share of the overall run time is spent 
 The purpose of this step is to detect the need for program interruption to trigger saving the current state in a snapshot file and termination of the program.
 Since there is no data dependence on this communication step, it is possible to reverse the logic of this routine, replace the respective MPI calls with their non-blocking counterparts and trigger the snapshot writing after the next time step.
 This enables perfect overlap of computation and communication at the expense of a one time step lag in the snapshot writing.
-Figure \ref{fig:arepo_mpicom} shows the comparison of the blocking (top) vs the nonblocking (bottom) synchronisation step for a random selection of MPI tasks. It is clearly visible that the MPI busy wait portion of the code (yellow), i. e.  the time that a rank is waiting for others to reach the synchronisation point, is reduced in the graphical output where nonblocking communication is used. 
+Figure \ref{fig:arepo_mpicom} shows the comparison of the blocking (top) vs the nonblocking (bottom) synchronisation step for a random selection of MPI tasks. It is clearly visible that the MPI busy wait portion of the code (yellow), i.e. the time that a rank is waiting for others to reach the synchronisation point, is reduced in the graphical output where nonblocking communication is used.
 
 \begin{figure}[htp]
 	\centering
@@ -43,7 +47,9 @@ Figure \ref{fig:arepo_mpicom} shows the comparison of the blocking (top) vs the 
 	\caption{Significant reduction of MPI Busy Wait Time (yellow) in the lower VTune Profiler graphic compared to the top version where blocking communication was used. Shown for a random selection of ranks}
 	\label{fig:arepo_mpicom} % chktex 24
 \end{figure}
-To further test these findings, the Illustris 3 test case~\cite{Nelson_2015} was used. Figure \ref{fig:arepo_blockvsnonblock} shows the impact of this improvement across varying number of MPI tasks by comparing overall runtime of the original code variant (blue line) with the improved version (orange line). As expected, the synchronisation overhead is negligible for smaller numbers of tasks where computational work dominates but becomes noticeable with more than ~2000 tasks and incurs significant slow-down with ~3000 tasks and more.  
+To further test these findings, the Illustris 3 test case~\cite{Nelson_2015} was used.
+Figure~\ref{fig:arepo_blockvsnonblock} shows the impact of this improvement across varying number of MPI tasks by comparing overall runtime of the original code variant (blue line) with the improved version (orange line).
+As expected, the synchronisation overhead is negligible for smaller numbers of tasks where computational work dominates but becomes noticeable with more than ~2000 tasks and incurs significant slow-down with ~3000 tasks and more.
 \begin{figure}[htp]
 	\centering
 	\includegraphics[clip,width=0.6\textwidth]{images/Arepo_blockingvsNonblocking.png}
@@ -52,26 +58,36 @@ To further test these findings, the Illustris 3 test case~\cite{Nelson_2015} was
 \end{figure}
 
 Second profiling outcome and original motivation for this analysis was to understand the distribution of run time across the different parts of a time step and subsequently to identify suitable candidates for GPU porting.
-The two most time-consuming parts proved to be the evaluation of gravitational forces with a Tree particle Mesh algorithm, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between. 
+The two most time-consuming parts proved to be the evaluation of gravitational forces with a Tree particle Mesh algorithm, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between.
 
- \subsubsection{OneAPI Offload Advisor}
+\subsubsection{OneAPI Offload Advisor}
 The next step in the analysis was to use Intel's Offload Advisor to see if these contain any kernels that would readily benefit from GPU offloading.
 However, with the current structure of the underlying algorithm the Offload Advisor judged every routine to suffer from too much overhead when ported to GPU.
 Only relatively short loops within sub steps of the mesh creation routines were classified as offload candidates that could potentially see any speed-up.
 
-Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware. 
+Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware.
 
-After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation. Since this requires major restructuring of the code it was not possible to port withing the scope of this project and is still ongoing. 
+After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation.
+Since this requires major restructuring of the code it was not possible to port withing the scope of this project and is still ongoing.
 
 \subsubsection{Intel oneAPI Math Kernel Library}
-As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, don't support the use of accelerators. Intel oneAPI Math Kernel Library offers FFTW3 (and FFTW2) interfaces to the Fast Fourier Transform functionality. Therefore allowing oneMKL to be used as a drop in replacement for FFTW. On CPU we don't see much performance changes between oneMKL and FFTW3 but will test this further on Intel GPUs. 
+As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, don't support the use of accelerators.
+Intel oneAPI Math Kernel Library offers FFTW3 (and FFTW2) interfaces to the Fast Fourier Transform functionality.
+Therefore allowing oneMKL to be used as a drop in replacement for FFTW.
+On CPU we don't see much performance changes between oneMKL and FFTW3 but will test this further on Intel GPUs.
 
 \subsubsection{Programming Model}
-AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow Intel’s recommendation to use OpenMP 5 offloading to target GPUs. While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified. With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, thus allowing us to reevaluate our decision on using OpenMP 5 offload. 
+AREPO is written in C, parallelized with MPI and OpenMP.
+We intended to follow Intel’s recommendation to use OpenMP 5 offloading to target GPUs.
+While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
+With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, thus allowing us to reevaluate our decision on using OpenMP 5 offload.
 
 
 \subsubsection{Summary}
-A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs. For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is typically given. The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs. This is beyond the scope of this project.
+A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs.
+For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is typically given.
+The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs.
+This is beyond the scope of this project.
 
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
