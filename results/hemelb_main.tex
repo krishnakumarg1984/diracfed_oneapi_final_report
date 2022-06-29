@@ -101,6 +101,8 @@ We further tried porting the full HemeLB\_GPU CUDA code to the OneAPI framework 
 HemeLB relies on a few dependencies (metis/parmetis, boost, ctemplate, tinyxml), which need to be installed prior to compiling the source code.  
 Hence, one issue that needs to be resolved first is having the right modules for building/compiling dependencies and native source CUDA code, before repeating the same procedure for the ported DPC++ code.
 
+
+
 The source files that need to be ported to DPC++ are the following: 
 \begin{verbatim}
     src
