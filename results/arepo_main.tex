@@ -73,7 +73,7 @@ AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow I
 
 
 \subsubsection{Summary}
-A prerequisite for any successful porting effort is 
+A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs. The extensive analysis work performed on AREPO suggests that significant effort has to be invested into the code base to transform it into such a form. 
 For codes like Arepo, that are not yet targeting any accelerators SYCL/OneAPI 
 Since the Voronoi mesh and the tree based force evaluation are a fundamental parts of the code it requires a lot of restructuring implement an initial version that targets GPUs. 
 
