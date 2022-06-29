@@ -16,17 +16,16 @@ Arepo is written in C, parallelized with MPI and some of the code bases, includi
 To the best of our knowledge, there is currently no version of this code that can target accelerators with any of the computational kernels in the main time loop.
 As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
 
-\subsubsection{Running out of the Box}
+\subsubsection{Running the code}
 Arepo depends on several libraries that are necessary for compilation. 
     \begin{itemize}
         \item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} Gnu Scientific Library as a random number generator and for numerical integration.
         \item{\textbf{FFTW3\footnote{\url{http://www.fftw.org/}}:}} Fastest Fourier Transform in the West is used in the particle-mesh algorithm
         \item{\textbf{HDF5\footnote{\url{https://support.hdfgroup.org/HDF5/doc/H5.intro.html}}:}} Hierarchical Data Format is used as the standard input/output format in Arepo. 
     \end{itemize}
-Additionally Arepo needs a configuration and a parameter file for each example. The parameter file needs to be modified on each platform to store the maximum memory size, which should be around 95\% of the available RAM for every process and it must point to the correct data folder for initial condition files and output files. Most Arepo branches come with a testsuite of small examples to verify the code. Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data from that project~\cite{Nelson_2015} can be used for longer runs. Those runs require a path to an empty file named 'ExpansionList\_128'. 
-% In order to run simulations efficiently on the next generation of supercomputers there are a few key aspects that need to be taken into account.
-% Some of those steps are already well known in the HPC community for years, i.e. well balanced computational load or the avoiding collective communication as much as possible.
-% Apart from that it will be increasingly important to make use of hybrid architectures, i.e. accelerators.
+Additionally Arepo needs a configuration and a parameter file for each example. The parameter File contains the run-time options whereas the configuration file specifies the code and is needed at compile-time. Special variables in the parameter file needs to be modified on each platform to provide the maximum memory size, which should be around 95\% of the available RAM for every process and it must point to the correct data folder for initial condition files and output files. Most Arepo branches come with a testsuite of small examples to verify the code. Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data from that project~\cite{Nelson_2015} can be used for longer test runs. The Illustris examples require a path to an empty file named 'ExpansionList\_128'. 
+
+\subsubsection{Profiling}
 In contrast to codes described above, where suitable kernels for GPU execution have already been identified in prior porting efforts, this selection process has to be done as an additional first step for this purely CPU-based code.
 Therefore, extensive profiling of the code base has been undertaken using one of the test cases that are also used to verify code correctness to analyze the potential of porting parts of Arepo to GPUs.
 Hence, a first analysis was carried out using Intel VTune profiler and Intel Trace Analyzer, producing two key insights:
@@ -39,7 +38,7 @@ Even on this small single-node test case this already reduces the run time of th
 
 \begin{figure}[htp]
 	\centering
-	\subfloat{ \includegraphics[clip,width=\textwidth]{arepo_blocking.png}}
+	\subfloat{ \includegraphics[clip,width=\textwidth]{arepo_blocking.png}}\\
 	\subfloat{ \includegraphics[clip,width=\textwidth]{arepo_nonblocking.png}}
 	\caption{Significant reduction of MPI Busy Wait Time (yellow) in the lower VTune Profiler graphic compared to the top version where blocking communication was used. Shown for a random selection of ranks}
 	\label{fig:arepo_mpicom} % chktex 24
