@@ -1,7 +1,7 @@
 %!TEX root = ../main.tex
 % vim:nospell
 
-\directlua{pdf.setminorversion(7)}  % chktex 36
+% \directlua{pdf.setminorversion(7)}  % chktex 36
 % \RequirePackage[debrief]{silence}
 \RequirePackage[l2tabu, orthodox]{nag}
 
@@ -30,9 +30,9 @@
 \PassOptionsToPackage{depth=3, open=true, openlevel=0, numbered=true}{bookmark}
 \PassOptionsToPackage{margin=10pt, font=small, labelfont={bf}, labelsep=quad}{caption}
 \PassOptionsToPackage{draft}{fixme} % ok to have fixme and todonotes (see a few lines below). No packages are loaded here. This merely specifies what options to pass if packages get loaded later on.
-\PassOptionsToPackage{no-math, quiet}{fontspec}
+% \PassOptionsToPackage{no-math, quiet}{fontspec}
 \PassOptionsToPackage{paper=a4paper, hmarginratio=1:1, vmarginratio=1:1, scale=0.765}{geometry}
-\PassOptionsToPackage{libertinus}{fontsetup}
+% \PassOptionsToPackage{libertinus}{fontsetup}
 \PassOptionsToPackage{all}{hypcap}
 \PassOptionsToPackage{pdfencoding=auto,psdextra}{hyperref}
 \PassOptionsToPackage{hyphenation, lastparline, nosingleletter}{impnattypo}
@@ -47,24 +47,27 @@
 \PassOptionsToPackage{table}{xcolor}
 
 \documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 
 %%%%%%%%%% list of packages to be loaded %%%%%%%%%%
 
-\input{preamble/generic_packages}        % general packages for a typical technical report (LuaTeX-compatible); loads the biblatex package
+\input{preamble/generic_packages}        % general packages for a typical technical report; loads the biblatex package
 \input{preamble/float_related_packages}  % table/images/caption related packages (latex float handling)
 % \input{preamble/math_packages}           % All math-related packages particularly loads 'unicode-math' (which itself loads fontspec)
 
 % \usepackage{unicode-math} % which loads 'fontspec' (must be loaded only after graphicx and babel); https://tex.stackexchange.com/questions/188222/problem-with-babel-and-fontspec; no-math option (math-handling is left to unicode-math); silent to suppress all warnings (even in log file)
 % \input{preamble/custom_cmds_unicode_fontselection} % choose text, math fonts & monospaced fonts here
 
-\usepackage{fontsetup}    % Easier front-end to the fontspec package for use with unicode fonts
+% \usepackage{fontsetup}    % Easier front-end to the fontspec package for use with unicode fonts
+\usepackage{libertinus}
 
 \usepackage{ragged2e}     % 'ragged2e' should be loaded after the body font & size have been established
 
 \usepackage{microtype}    % for 'microtype' if using the option 'babel=true', babel must be loaded before microtype; microtype must be loaded after font selection (i.e. after fontspec/unicode-math)
 \input{preamble/custom_cmds_pkg_microtype.tex}
 
-\usepackage{selnolig}     % luatex package; load after babel
+% \usepackage{selnolig}     % luatex package; load after babel
 
 \usepackage{csquotes}     % The fvextra package is loaded by 'minted', so you should load 'minted' before 'csquotes'; 'csquotes' must be loaded after biblatex
 \input{preamble/custom_cmds_pkg_csquotes}
@@ -76,7 +79,7 @@
 \usepackage{fontawesome5}
 \input{preamble/custom_cmds_orcidlogo}
 
-\usepackage{impnattypo}   % luatex package
+% \usepackage{impnattypo}   % luatex package
 \usepackage{nowidow}
 
 \usepackage{xurl}         % to be loaded after biblatex if biblatex interaction is needed

@@ -49,7 +49,8 @@ push @generated_exts, "xdy";
 push @generated_exts, "xmpdata";
 push @generated_exts, "xmpi";
 
-$pdflatex='lualatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
+# $pdflatex='lualatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
+$pdflatex='pdflatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
 $pdf_mode=1;
 $postscript_mode=$dvi_mode = 0;
 $clean_ext.='%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
