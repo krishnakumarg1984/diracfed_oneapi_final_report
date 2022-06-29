@@ -62,8 +62,10 @@ Overall, this suggests that for a successful GPU port of Arepo it may not be suf
 For that, we are in active discussions with the developers at the University of Cambridge and take into account prior experience and publications in the scientific domain.
 
 \subsubsection{Intel oneAPI Math Kernel Library}
-As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, support the use of accelerators. 
+As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, don't support the use of accelerators. Intel oneAPI Math Kernel Library offers FFTW3 (and FFTW2) interfaces to the Fast Fourier Transform functionality. Therefore allowing oneMKL to be used as a drop in replacement for FFTW. On CPU we don't see much performance changes between oneMKL and FFTW3 but hope to test this further on Intel's GPUs. 
 
+\subsubseciton{Programming Model}
+AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow Intel’s recommendation to use OpenMP 5 offloading to target GPUs. While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified. With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization. 
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
 

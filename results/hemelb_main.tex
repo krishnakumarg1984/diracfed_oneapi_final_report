@@ -90,7 +90,7 @@ Furthermore, the memory transactions to/from the GPU global memory are reported 
 	\label{fig:nsys_DPC++_A100GPU}
 \end{figure}
 
-In this porting exercise, we have only examined HemeLB's main fluid collision kernel.
+In this initial porting exercise, we have only examined HemeLB's main fluid collision kernel.
 With this proof-of-concept completed, the next step would be to work through the full version of the HemeLB code to fully port it to the DPC++ format.
 Being a mature code, conducting such a project port will more strongly test the capabilities to effectively port MPI-parallelised CUDA code to the OneAPI framework.
 
@@ -98,8 +98,7 @@ Being a mature code, conducting such a project port will more strongly test the 
 \subsubsection{Porting the full HemeLB\_GPU code}
 We further tried porting the full HemeLB\_GPU CUDA code to the OneAPI framework on CSD3. This is a more complex situation, as it involves migrating multiple files to DPC++ and relies on CMake to build and compile the project.    
 
-HemeLB relies on a few dependencies (metis/parmetis, boost, ctemplate, tinyxml), which need to be installed prior to compiling the source code.  
-Hence, one issue that needs to be resolved first is having the right modules for building/compiling dependencies and native source CUDA code, before repeating the same procedure for the ported DPC++ code.
+HemeLB relies on a few dependencies (ParMETIS, Boost, CTemplate, TinyXML), which need to be installed prior to compiling the source code. Hence, one issue that needs to be resolved to ensure fair performance comparison is having the right modules for building/compiling dependencies and native source CUDA code, before repeating the same procedure for the ported DPC++ code. Whilst HemeLB compilation is generally straightforward, the ease of migration to a new machine is always something of an unknown.
 
 Our workflow on CSD3 was the following:
 \begin{enumerate}
@@ -117,7 +116,7 @@ rhel8/default-amp libtirpc/1.2.6/gcc-9.4.0-duam2pr gcc/9.4.0/gcc-11.2.0-72sgv5z 
 \end{enumerate}
 
 
-The source files that need to be ported to DPC++ are the following: 
+The source files, which specifically contain CUDA code and need to be ported to DPC++ are the following: 
 \begin{verbatim}
     src
     |- cuda kernels def decl
@@ -236,6 +235,8 @@ Further compiling problems related to the pow function
 
 
 \subsubsection{General Comments}
+
+
 Generally, we must note that the warnings are clear and running the dpct compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can still carry out.  
 
 JM:
@@ -245,12 +246,13 @@ JM:
 - Some errors/warnings require SYCL knowledge to correct. 
 - Some CUDA functions may not have direct equivalents in SYCL, finding equivalent functions and appropriate syntax may be more hands on changes.
 - Code base needs to be C++17 or above to run. Will require further effort for converting codes with older/legacy components.
-- Conversion to OneAPI
+- Conversion to OneAPI makes more syntax and operational changes to the code than may be seen with other conversion tools (e.g. HIP). This requires a user with CUDA background to become more familiar with the changes made to the code by the conversion tool and the operation of the SYCL architecture.
+- Manual conversion of just the files with CUDA content does not achieve the same result as using the conversion tools. These tools pick-up and convert extra files needed to complete compilation. 
 
 
 
 \subsubsection{Estimate of Development Effort}
-Rough estimate of 2-3 months FTE for developers without prior SYCL and OneAPI experience. Conversion to OneAPI is more  
+Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e. dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI process. This estimate was made based on developers having no prior experience with OneAPI or SYCL prior to this exercise. As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g. with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA.
 
 
 \end{document}
