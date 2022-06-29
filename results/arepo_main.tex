@@ -73,7 +73,8 @@ AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow I
 
 
 \subsubsection{Summary}
-
+For codes like Arepo, that are not yet targeting any accelerators SYCL/OneAPI provides an 
+Since the Voronoi mesh and the tree based force evaluation are a fundamental parts of the code it requires a lot of restructuring implement an initial version that targets GPUs. 
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
 %For that, we are in active discussions with the developers at the University of Cambridge and take into account prior experience and publications in the scientific domain.
