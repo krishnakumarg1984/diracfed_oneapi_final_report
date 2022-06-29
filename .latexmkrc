@@ -1,6 +1,7 @@
-@generated_exts="";
+@generated_exts = "";
 
 push @generated_exts, "glg";
+
 # push @generated_exts, "glg-abr";
 # push @generated_exts, "glo";
 # push @generated_exts, "glo-abr";
@@ -50,62 +51,75 @@ push @generated_exts, "xmpdata";
 push @generated_exts, "xmpi";
 
 # $pdflatex='lualatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
-$pdflatex='pdflatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
-$pdf_mode=1;
-$postscript_mode=$dvi_mode = 0;
-$clean_ext.='%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
-$ENV{'TZ'}='Europe/London';
-# @default_files = ('main.tex');
+$pdflatex =
+  'pdflatex %O %S -interaction=nonstopmode -halt-on-error --bibtex --recorder';
+$pdf_mode        = 1;
+$postscript_mode = $dvi_mode = 0;
+$clean_ext .=
+'%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
+$ENV{'TZ'} = 'Europe/London';
+@default_files = (
+    'main.tex',                 'methods.tex',
+    'abstract.tex',             'conclusion.tex',
+    'introduction.tex',         'title_page.tex',
+    'acknowledgements.tex',     'introduction.tex',
+    'results/arepo_main.tex',   'results/dgpoly3d_main.tex',
+    'results/hemelb_main.tex',  'results/openmm_main.tex',
+    'results/openqcd_main.tex', 'results/results_all.tex'
+);
 
 # add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
-add_cus_dep('acn', 'acr', 0, 'run_makeglossaries');
+add_cus_dep( 'acn', 'acr', 0, 'run_makeglossaries' );
 
 sub run_makeglossaries {
-  if ( $silent ) {
-    system "makeglossaries -q $_[0]";
-  }
-  else {
-    system "makeglossaries $_[0]";
-  };
+    if ($silent) {
+        system "makeglossaries -q $_[0]";
+    }
+    else {
+        system "makeglossaries $_[0]";
+    }
 }
 
 push @file_not_found, '^Package .* No file `([^\\\']*)\\\'';
 
 $bibtex_use = 1.5;
-$compiling_cmd = "xdotool search --name \"%D\" set_window --name \"%D compiling\"";
-$success_cmd   = "xdotool search --name \"%D\" set_window --name \"%D OK\"";
-$warning_cmd   = "xdotool search --name \"%D\" "."set_window --name \"%D CITE/REF ISSUE\"";
-$failure_cmd   = "xdotool search --name \"%D\" set_window --name \"%D FAILURE\"";
+$compiling_cmd =
+  "xdotool search --name \"%D\" set_window --name \"%D compiling\"";
+$success_cmd = "xdotool search --name \"%D\" set_window --name \"%D OK\"";
+$warning_cmd =
+  "xdotool search --name \"%D\" " . "set_window --name \"%D CITE/REF ISSUE\"";
+$failure_cmd = "xdotool search --name \"%D\" set_window --name \"%D FAILURE\"";
 
-$cleanup_includes_cusdep_generated=0;
-$cleanup_includes_generated=0;
+$cleanup_includes_cusdep_generated = 0;
+$cleanup_includes_generated        = 0;
 
 # $fdb_ext="haha";
 
-add_cus_dep('aux', 'glstex', 0, 'run_bib2gls');
+add_cus_dep( 'aux', 'glstex', 0, 'run_bib2gls' );
 
 sub run_bib2gls {
-  my ($base, $path) = fileparse( $_[0] );
-  my $silent_command = $silent ? "--silent" : "";
-  if ( $path ) {
-    my $ret = system("bib2gls $silent_command -d '$path' --group '$base'");
-  } else {
-    my $ret = system("bib2gls $silent_command --group '$_[0]'");
-  };
-  # Analyze log file.
-  local *LOG;
-  $LOG = "$_[0].glg";
-  if (!$ret && -e $LOG) {
-    open LOG, "<$LOG";
-    while (<LOG>) {
-      if (/^Reading (.*\.bib)\s$/) {
-        rdb_ensure_file( $rule, $1 );
-      }
+    my ( $base, $path ) = fileparse( $_[0] );
+    my $silent_command = $silent ? "--silent" : "";
+    if ($path) {
+        my $ret = system("bib2gls $silent_command -d '$path' --group '$base'");
     }
-    close LOG;
-  }
-  return $ret;
+    else {
+        my $ret = system("bib2gls $silent_command --group '$_[0]'");
+    }
+
+    # Analyze log file.
+    local *LOG;
+    $LOG = "$_[0].glg";
+    if ( !$ret && -e $LOG ) {
+        open LOG, "<$LOG";
+        while (<LOG>) {
+            if (/^Reading (.*\.bib)\s$/) {
+                rdb_ensure_file( $rule, $1 );
+            }
+        }
+        close LOG;
+    }
+    return $ret;
 }
 
 # vim: ft=perl
-
