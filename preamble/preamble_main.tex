@@ -32,6 +32,7 @@
 \PassOptionsToPackage{draft}{fixme} % ok to have fixme and todonotes (see a few lines below). No packages are loaded here. This merely specifies what options to pass if packages get loaded later on.
 \PassOptionsToPackage{no-math, quiet}{fontspec}
 \PassOptionsToPackage{paper=a4paper, hmarginratio=1:1, vmarginratio=1:1, scale=0.765}{geometry}
+\PassOptionsToPackage{libertinus}{fontsetup}
 \PassOptionsToPackage{all}{hypcap}
 \PassOptionsToPackage{pdfencoding=auto,psdextra}{hyperref}
 \PassOptionsToPackage{hyphenation, lastparline, nosingleletter}{impnattypo}
@@ -49,20 +50,24 @@
 
 %%%%%%%%%% list of packages to be loaded %%%%%%%%%%
 
-\usepackage{shellesc}
 \input{preamble/generic_packages}        % general packages for a typical technical report (LuaTeX-compatible); loads the biblatex package
 \input{preamble/float_related_packages}  % table/images/caption related packages (latex float handling)
-\input{preamble/math_packages}           % All math-related packages particularly loads 'unicode-math' (which itself loads fontspec)
+% \input{preamble/math_packages}           % All math-related packages particularly loads 'unicode-math' (which itself loads fontspec)
 
-\usepackage{unicode-math} % which loads 'fontspec' (must be loaded only after graphicx and babel); https://tex.stackexchange.com/questions/188222/problem-with-babel-and-fontspec; no-math option (math-handling is left to unicode-math); silent to suppress all warnings (even in log file)
-\input{preamble/custom_cmds_unicode_fontselection} % choose text, math fonts & monospaced fonts here
+% \usepackage{unicode-math} % which loads 'fontspec' (must be loaded only after graphicx and babel); https://tex.stackexchange.com/questions/188222/problem-with-babel-and-fontspec; no-math option (math-handling is left to unicode-math); silent to suppress all warnings (even in log file)
+% \input{preamble/custom_cmds_unicode_fontselection} % choose text, math fonts & monospaced fonts here
+
+\usepackage{fontsetup}    % Easier front-end to the fontspec package for use with unicode fonts
 
 \usepackage{ragged2e}     % 'ragged2e' should be loaded after the body font & size have been established
+
 \usepackage{microtype}    % for 'microtype' if using the option 'babel=true', babel must be loaded before microtype; microtype must be loaded after font selection (i.e. after fontspec/unicode-math)
+\input{preamble/custom_cmds_pkg_microtype.tex}
 
 \usepackage{selnolig}     % luatex package; load after babel
 
 \usepackage{csquotes}     % The fvextra package is loaded by 'minted', so you should load 'minted' before 'csquotes'; 'csquotes' must be loaded after biblatex
+\input{preamble/custom_cmds_pkg_csquotes}
 
 \usepackage{listings}
 \input{preamble/hyperref_related_packages}  % hyperxmp, hyperref, nameref, algorithm, hypcap, bookmark, glossaries, cleveref, showframe etc.
@@ -73,30 +78,28 @@
 \usepackage{nowidow}
 
 \usepackage{xurl}         % to be loaded after biblatex if biblatex interaction is needed
+\input{preamble/custom_cmds_pkg_url}
 
 %---------- end of package loading ---------%
 
 
 %---------- begin custom commands ----------%
 
-% \input{preamble/colors_for_doc}
-\input{preamble/custom_cmds_graphics}
-% \input{preamble/custom_cmds_pkg_silence}
-\input{preamble/custom_cmds_bibliography}     % the 'bib' file goes in here
-% \input{preamble/custom_cmds_pkg_caption}
-\input{preamble/custom_cmds_pkg_cleveref}
-\input{preamble/custom_cmds_pkg_csquotes}
-\input{preamble/custom_cmds_pkg_fancyhdr}
-% \input{preamble/custom_cmds_pkg_glossaries.tex}
-\input{preamble/custom_cmds_pkg_microtype.tex}
-\input{preamble/custom_cmds_pkg_todonotes}
-% \input{preamble/custom_cmds_pkg_ulem}
+\input{preamble/custom_cmds_bibliography}          % the 'bib' file goes in here
 \input{preamble/custom_cmds_tabularmaterial}
-\input{preamble/custom_cmds_pkg_url}
-
 \input{preamble/custom_genpurpose_cmds}
-\input{preamble/custom_latex_settings}        % adjusts penalites & other settings for tex's page layout algorithm
+\input{preamble/custom_latex_settings}             % adjusts penalites & other settings for tex's page layout algorithm
 \input{preamble/custom_maketitle_cmd}
 
+
+% \input{preamble/colors_for_doc}
+% \input{preamble/custom_cmds_pkg_silence}
+% \input{preamble/custom_cmds_pkg_caption}
+% \input{preamble/custom_cmds_pkg_cleveref}
+% \input{preamble/custom_cmds_pkg_glossaries.tex}
+% \input{preamble/custom_cmds_pkg_ulem}
+
 %---------- end custom commands ----------%
+
+
 \setstretch{1.348361657291667}

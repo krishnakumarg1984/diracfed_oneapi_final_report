@@ -11,8 +11,10 @@
 \usepackage{checkend}
 
 \usepackage{fancyhdr}
-\usepackage{filemod}
-% \usepackage{fixme}
+\input{preamble/custom_cmds_pkg_fancyhdr}
+
+% \usepackage{filemod}
+
 
 \usepackage{geometry}
 
@@ -23,18 +25,25 @@
 % \usepackage{siunitx}
 % \input{preamble/custom_cmds_pkg_siunitx}
 
-\usepackage{todonotes}     % whoa! loads array,color,colortbl,pdfcolmk,xcolor,tikz,pgf,pgffor,pgfrcs,pgfcomp-*,graphicx,keyval,graphics,trig,pgfsys,xcolor,pgfbasedecorations,pgfbasesnakes,
+% \usepackage{todonotes}     % whoa! loads array,color,colortbl,pdfcolmk,xcolor,tikz,pgf,pgffor,pgfrcs,pgfcomp-*,graphicx,keyval,graphics,trig,pgfsys,xcolor,pgfbasedecorations,pgfbasesnakes,
+% \usepackage[obeyFinal]{easy-todo}
+% \usepackage[marginpar]{todo}
+
+\usepackage{xcolor}
+% \usepackage{soul}
+\usepackage{fixme}
+\input{preamble/custom_cmds_pkg_todonotes}
 
 
-% ------- other unused general packages (but potentially useful in a typical article/report) ----------
+% ------- Other unused general packages (but potentially useful in a typical article/report) ----------
 % \usepackage{addlines}
 % \usepackage{blindtext}
 % \usepackage{cmdtrack}
-% \usepackage{etoolbox}   % not really required if using glossaries package, since this package then gets loaded automatically
+% \usepackage{etoolbox}    % not really required if using glossaries package, since this package then gets loaded automatically
 % \usepackage{fnpct}
 % \usepackage{footnote}
 % \usepackage{fullpage}
-% \usepackage{layouts}    % helpful for computing textwidth, textheight etc
+% \usepackage{layouts}     % helpful for computing textwidth, textheight etc
 % \usepackage{lscape}
 % \usepackage{luabibentry}
 % \usepackage{makebox}

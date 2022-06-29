@@ -1,16 +1,19 @@
 %!TEX root = ../main.tex
 % vim:nospell
 
-\usepackage{booktabs}
-\usepackage{caption}     % loaded by 'subcaption'. For improved layout of figure captions with extra margin, smaller font than text etc.
-% \usepackage{float}     % Loading order is important here; https://tex.stackexchange.com/questions/435529/correct-loading-order-of-package-newfloat-along-with-hyperref-and-algorithmic-pa/435597#435597
+% \usepackage{booktabs}
+% \usepackage{caption}     % loaded by 'subcaption'. For improved layout of figure captions with extra margin, smaller font than text etc.
+% \usepackage{float}      % Loading order is important here; https://tex.stackexchange.com/questions/435529/correct-loading-order-of-package-newfloat-along-with-hyperref-and-algorithmic-pa/435597#435597
+
+\usepackage{graphicx}     % 'graphicx' must be loaded before 'fontspec'
+\input{preamble/custom_cmds_graphics}
+
 \usepackage{multirow}
-\usepackage{graphicx}    % 'graphicx' must be loaded before 'fontspec'
-\usepackage{subfig}      % better to use subcaption instead of subfig
+\usepackage{subfig}       % better to use subcaption instead of subfig
 % \usepackage{subcaption}  % already loads 'caption'
 
 
-% ---------- other unused float-related packages  ----------
+% ---------- Other unused float-related packages  ------------------
 % \usepackage{chkfloat}
 % \usepackage{flafter}
 % \usepackage{longtable}
