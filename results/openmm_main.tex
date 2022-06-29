@@ -47,7 +47,8 @@ The GPU specific code in OpenMM uses what is referred to as a common compute fra
 The main kernels of the code are written in a platform agnostic form and these are then assembled at run time for the target platform.
 This run time code generation presented significant challenges to porting OpenMM to SYCL.
 The first challenge was that the application of conversion tools such as the Intel DPC++ Compatibility Tool was difficult.
-We found it was not possible to convert the CUDA source code to SYCL in our testing as the compatibility tool is not compatible with CUDA run time compilation. If parts of the CUDA run time compilation API are passed to the compatibility tool errors are generated e.g.
+We found it was not possible to convert the CUDA source code to SYCL in our testing as the compatibility tool is not compatible with CUDA run time compilation.
+If parts of the CUDA run time compilation API are passed to the compatibility tool errors are generated e.g.
 
 \begin{verbatim}
 
@@ -82,7 +83,8 @@ Intel DPC++ Compatibility Tool was able to convert 100$\%$ of the code which cou
 With SYCL and CUDA versions of the bonded force kernel we compared the performance of these to codes.
 To make this comparison we used XeMax GPUs on the Intel DevCloud and a local Nvidia Quadro M1000M to compute the energies of progressively larger sets of bonds.
 These runs were timed and the resulting the data plotted in figure~\ref{fig:openmm}.
-All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}. The results in figure~\ref{fig:openmm} demonstrate the code is running roughly as expected but more specific assertions about relative performance are not possible due to 1) the inequality of the hardware and 2) the lack of optimisation in SYCL code.
+All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}.
+The results in figure~\ref{fig:openmm} demonstrate the code is running roughly as expected but more specific assertions about relative performance are not possible due to 1) the inequality of the hardware and 2) the lack of optimisation in SYCL code.
 
 \begin{figure}[!htbp]
 	\caption{Comparison of compute time for different sized sets of bonds using Intel XeMax and Nvidia Quadro M1000M. The timing runs are repeated 5 times, the line is plotted as the average of these repeats and the shaded areas as $\pm$ the standard deviation of the repeats.}
@@ -93,7 +95,8 @@ All the code used to generate this plot can be found here: \url{https://github.c
 \subsubsection{Further Work for Porting OpenMM}\label{sec:openmm_furtherwork}
 
 As has already been mentioned above there are two major parts of an OpenMM port to SYCL that have not addressed in this work these are 1) porting of all force kernels and 2) porting of dynamic code generation methods.
-Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority. The authors are aware of other codes which use run time compilation with SYCL (https://github.com/ginkgo-project/ginkgo) and so although porting OpenMM to SYCL would take significant effort to perform manually we are not aware of any reasons why it would not be possible.
+Before continuing to port more force kernels it is the opinion of the authors that porting of the dynamic code generation should be the next priority.
+The authors are aware of other codes which use run time compilation with SYCL (https://github.com/ginkgo-project/ginkgo) and so although porting OpenMM to SYCL would take significant effort to perform manually we are not aware of any reasons why it would not be possible.
 
 
 \subsubsection{Effort Required for Porting OpenMM}\label{sec:openmm_effort}

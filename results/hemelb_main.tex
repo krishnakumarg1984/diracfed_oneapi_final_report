@@ -197,8 +197,7 @@ Finally, warnings were also issued for parameters declared in the CUDA code as `
 \end{verbatim}
 
 \subsubsection{Compiling}
-We used Intel’s clang++ compiler and passed the flags ``-fsycl" and ``-fsycl-targets=nvptx64-nvidia-
-cuda" to compile SYCL code targeting the NVidia CUDA backend.
+We used Intel’s clang++ compiler and passed the flags ``-fsycl'' and ``-fsycl-targets=nvptx64-nvidia-cuda'' to compile SYCL code targeting the NVidia CUDA backend.
 One problem detected was that the CMakeLists.txt file was not adjusted accordingly after running the  compatibility tool.
 The migrated source files (extension changed to *.dp.cpp) were not updated (in set root\_sources).
 In our case this involved the following files:
@@ -260,10 +259,10 @@ Generally speaking however, we note that the warnings are clear and running the 
 This makes the porting process a task that even a developer with little to no experience in SYCL can carry out.
 
 \subsubsection{Estimate of Development Effort}
-Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e. dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI platform.
+Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e.\ dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI platform.
 This estimate was made based on developers having no prior experience with OneAPI or SYCL prior to this exercise.
 Unsupported developers from the same background may take longer.
-As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g. with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA.
+As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g.\ with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA.
 At the time of writing, a detailed performance comparison of the ported and CUDA version of the full HemeLB\_GPU had not been able to be made.
 Further developer time would be required to further tune the ported version of the code to minimise performance losses compared to the native CUDA version.
 
