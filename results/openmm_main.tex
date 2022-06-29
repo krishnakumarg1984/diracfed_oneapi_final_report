@@ -78,16 +78,17 @@ Intel DPC++ Compatibility Tool was able to convert 100$\%$ of the code which cou
 
 \subsubsection{Performance of the Ported Code}\label{sec:openmm_performance}
 
-\begin{figure}
-	\caption{Comparison of compute time for different sized sets of bonds using Intel XeMax and Nvidia Quadro M1000M. The timing runs are repeated 5 times, the line is plotted as the average of these repeats and the shaded areas as $\pm$ the standard deviation of the repeats.}
-	\includegraphics[width=\textwidth]{openmm2.png}
-	\label{fig:openmm}
-\end{figure}
 
 With SYCL and CUDA versions of the bonded force kernel we compared the performance of these to codes.
 To make this comparison we used XeMax GPUs on the Intel DevCloud and a local Nvidia Quadro M1000M to compute the energies of progressively larger sets of bonds.
 These runs were timed and the resulting the data plotted in figure~\ref{fig:openmm}.
 All the code used to generate this plot can be found here: \url{https://github.com/adw62/HarmonicBond_CUDA2SYCL}. The results in figure~\ref{fig:openmm} demonstrate the code is running roughly as expected but more specific assertions about relative performance are not possible due to 1) the inequality of the hardware and 2) the lack of optimisation in SYCL code.
+
+\begin{figure}[!htbp]
+	\caption{Comparison of compute time for different sized sets of bonds using Intel XeMax and Nvidia Quadro M1000M. The timing runs are repeated 5 times, the line is plotted as the average of these repeats and the shaded areas as $\pm$ the standard deviation of the repeats.}
+	\includegraphics[width=0.75\textwidth]{openmm2.png}
+	\label{fig:openmm}
+\end{figure}
 
 \subsubsection{Further Work for Porting OpenMM}\label{sec:openmm_furtherwork}
 

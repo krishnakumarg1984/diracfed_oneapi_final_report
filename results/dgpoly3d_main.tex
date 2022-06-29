@@ -74,46 +74,39 @@ The GPU was once again the Nvidia Ampere A100 and the CPU based systems were one
 To target the Nvidia GPU we compiled with the LLVM CUDA backend compiler with \texttt{clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda} and to target the CPU we compiled with both the DPC++ compiler (\texttt{dpcpp}) and with Intel's LLVM with \texttt{clang++ -fsycl} (which by default selects the generic spir64 target).
 The results of the unit test can be found on Table~\ref{tab:correctness}.
 
-\begin{center}
-	\begin{table}
-		\begin{tabular}{||c c c c c||}
-			\hline
-			    & \multicolumn{2}{c}{dpcpp} & \multicolumn{2}{c||}{clang++}                               \\ [0.5ex]
-			\hline
-			    & Icelake 8368Q             & EPYC 7763                     & Icelake 8368Q & Ampere A100 \\ [0.5ex]
-			\hline\hline
-			-O0 & 0.545073\% wrong          & 0.545073\% wrong              & -             & correct     \\ [0.3ex]
-			\hline
-			-O1 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-			-O2 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-			-O3 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-		\end{tabular}
-		\caption{\label{tab:correctness}}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\begin{tabular}{@{}c c c c c@{}}
+		\toprule
+		    & \multicolumn{2}{c}{\textbf{dpcpp}} & \multicolumn{2}{c}{\textbf{clang++}}                               \\
+		\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+		    & {Icelake 8368Q}                    & EPYC 7763                            & Icelake 8368Q & Ampere A100 \\
+		\midrule
+		-O0 & \qty{0.54507}{\percent} wrong      & \qty{0.54507}{\percent} wrong        & ---           & correct     \\
+		-O1 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		-O2 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		-O3 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		\bottomrule
+	\end{tabular}
+	\caption{\label{tab:correctness}}
+\end{table}
 
 Further investigation suggests that this behaviour is due to different default semantics for floating point calculations between the two different compilers.
 According to Table~\ref{tab:semantics} the default model in \texttt{dpcpp} is \texttt{fast} while in \texttt{clang++} is \texttt{precise}.
 
-\begin{center}
-	\begin{table}
-		\centering
-		\begin{tabular}{||ll|l||}
-			\hline
-			\multirow{4}{*}{dpcpp -O1}          & ---                & 1.20335\% wrong  \\
-			                                    & -fp-model=fast     & 1.20335\% wrong  \\
-			                                    & -fp-model=strict   & 0.545073\% wrong \\
-			                                    & -fp-model=precise  & correct          \\ \hline \hline
-			\multirow{4}{*}{clang++ -fsycl -O1} & ---                & correct          \\
-			                                    & -ffp-model=fast    & 1.20335\% wrong  \\
-			                                    & -ffp-model=strict  & 0.545073\% wrong \\
-			                                    & -ffp-model=precise & correct          \\ \hline
-		\end{tabular}
-		\caption{\label{tab:semantics}}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\multirow{4}{*}{\texttt{dpcpp -O1}}          & ---                          & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-fp-model=fast   }   & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-fp-model=strict }   & \qty{0.54507}{\percent} wrong \\
+		                                             & \texttt{-fp-model=precise}   & correct                       \\
+		\midrule
+		\multirow{4}{*}{\texttt{clang++ -fsycl -O1}} & ---                          & correct                       \\
+		                                             & \texttt{-ffp-model=fast    } & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-ffp-model=strict }  & \qty{0.54507}{\percent} wrong \\
+		                                             & \texttt{-ffp-model=precise}  & correct                       \\ \bottomrule
+	\end{tabular}
+	\caption{\label{tab:semantics}}
+\end{table}
 
 \end{document}

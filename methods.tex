@@ -21,15 +21,17 @@ DiRAC has several platforms available that provide GPUs. DiRAC has access to a p
 
 The porting project also has access to the Intel DevCloud which is operated on Intel's behalf by Colfax. There are a variety of Intel GPUs available from the Iris XE integrated graphics to the DG1 (discrete graphics) Arctic Sound GPU available to some customers on an NDA (non disclosure agreement) basis.
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 	\centering
-	\begin{tabular}{lllll}
-		Cluster  & Vendor & GPU Model        & GPUs / node & GPU nodes \\
-		\hline  % chktex 44
-		CSD3     & Nvidia & A100             & 4           & 80        \\
-		COSMA8   & AMD    & MI50             & 6           & 1         \\
-		DevCloud & Intel  & Iris XE          & 1           & 13        \\
-		DevCloud & Intel  & DG1 Arctic Sound & 1,2 or 4    & 2
+	\begin{tabular}{@{}lllcS@{}}
+		\toprule
+		\thead{Cluster} & \thead{Vendor} & \thead{GPU Model} & \thead{GPUs/node} & {\thead{GPU nodes}} \\
+		\midrule
+		CSD3            & Nvidia         & A100              & 4                 & 80                  \\
+		COSMA8          & AMD            & MI50              & 6                 & 1                   \\
+		DevCloud        & Intel          & Iris XE           & 1                 & 13                  \\
+		DevCloud        & Intel          & DG1 Arctic Sound  & 1,2 or 4          & 2                   \\
+		\bottomrule
 	\end{tabular}
 	\caption{Hardware platforms available to the project}
 	\label{tab:GPUs} % chktex 24

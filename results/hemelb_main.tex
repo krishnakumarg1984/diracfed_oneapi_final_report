@@ -48,19 +48,17 @@ This hardware however should not be regarded as comparable to the A100 cards and
 For this test we ran the kernel for the equivalent of 5000 iterations of a 100,000 site domain.
 This was repeated 10 times to obtain a fair estimate of the runtime.
 
-\begin{center}
-	\begin{tabular}{||c c c||}
-		\hline
-		Hardware    & Code  & Average Runtime [s]     \\ [0.5ex]
-		\hline\hline
-		NVIDIA A100 & CUDA  & 0.398578 +/- 0.00020542 \\
-		\hline
-		NVIDIA A100 & DPC++ & 0.436205 +/- 0.00793029 \\
-		\hline
-		Intel P630  & DPC++ & 15.4501 +/- 0.0939887   \\ [1ex]
-		\hline
+\begin{table}[!htbp]
+	\begin{tabular}{@{} l l r @{} }
+		\toprule
+		\thead{Hardware} & \thead{Code} & \thead{Average              runtime (s)} \\
+		\midrule
+		NVIDIA A100      & CUDA         & \num{0.398578 (0.00020542)}              \\
+		NVIDIA A100      & DPC++        & \num{0.4362050 (0.0079303)}              \\
+		Intel P630       & DPC++        & \num{15.450100 (0.0939887)}              \\
+		\bottomrule
 	\end{tabular}
-\end{center}
+\end{table}
 
 For this initial test case, it can be seen that on the common hardware tested here the conversion to the DPC++ framework and clang compiler has resulted in a 10\% drop in performance compared to the native CUDA code and NVIDIA compiler.
 
@@ -260,6 +258,5 @@ JM:
 Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e. dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI process.
 This estimate was made based on developers having no prior experience with OneAPI or SYCL prior to this exercise.
 As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g. with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA.
-
 
 \end{document}

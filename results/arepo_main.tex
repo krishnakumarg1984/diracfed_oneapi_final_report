@@ -47,7 +47,7 @@ Figure~\ref{fig:arepo_mpicom} shows the comparison of the blocking (top) vs the 
 To further test these findings, the Illustris 3 testcase [2] was used. Figure~\ref{fig:arepo_blockvsnonblock} shows the impact of this improvement across varying number of MPI tasks by comparing overall runtime of the original code variant (blue line) with the improved version (orange line). As expected, the synchronisation overhead is negligible for smaller numbers of tasks where computational work dominates but becomes noticeable with more than~2000 tasks and incurs significant slow-down with~3000 tasks and more.
 \begin{figure}[htp]
 	\centering
-	\includegraphics[clip,width=0.6\textwidth]{images/Arepo_blockingvsNonblocking.png}
+	\includegraphics[clip,width=0.6\textwidth]{Arepo_blockingvsNonblocking.png}
 	\caption{A comparison between the blocking and nonblocking synchronization step for }
 	\label{fig:arepo_blockvsnonblock} % chktex 24
 \end{figure}

@@ -136,22 +136,17 @@ This requires further study and optimization.\todo{@Tuomas Add what we found. Oc
 
 \begin{center}
 	\begin{table}
-		\begin{tabular}{||c c c c c||}
-			\hline
-			Kernel Name & Language & Duration [ms] & Compute Throughput [\%] & Memory Throughput [\%] \\
-			\hline\hline
-			mulpauli    & CUDA     & 4.85          & 16.07                   & 81.30                  \\
-			\hline
-			mulpauli    & SYCL     & 17.31         & 7.36                    & 70.89                  \\
-			\hline
-			doe         & CUDA     & 7.57          & 15.78                   & 62.66                  \\
-			\hline
-			doe         & SYCL     & 17.34         & 7.31                    & 61.12                  \\
-			\hline
-			deo         & CUDA     & 8.25          & 12.93                   & 54.88                  \\
-			\hline
-			deo         & SYCL     & 46.30         & 7.66                    & 27.24                  \\
-			\hline
+		\begin{tabular}{@{}l l S S S@{}}
+			\toprule
+			\thead{Kernel                                    \\ \vphantom{(ms)} } & \thead{Language \\ \vphantom{(ms)}} & {\thead{Duration                 \\ (ms)}} & {\thead{Compute \\ throughput (\%)}} & {\thead{Memory \\ throughput (\%)}} \\
+			\midrule
+			\texttt{mulpauli} & CUDA & 4.85  & 16.07 & 81.30 \\
+			\texttt{mulpauli} & SYCL & 17.31 & 7.36  & 70.89 \\
+			\texttt{doe}      & CUDA & 7.57  & 15.78 & 62.66 \\
+			\texttt{doe}      & SYCL & 17.34 & 7.31  & 61.12 \\
+			\texttt{deo}      & CUDA & 8.25  & 12.93 & 54.88 \\
+			\texttt{deo}      & SYCL & 46.30 & 7.66  & 27.24 \\
+			\bottomrule
 		\end{tabular}
 		\caption{\label{tab:openqcd_perf}Performance comparison of CUDA and SYCL OpenQCD DW kernels.}
 	\end{table}
