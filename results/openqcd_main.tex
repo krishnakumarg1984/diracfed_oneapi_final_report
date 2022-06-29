@@ -94,12 +94,12 @@ with the source files listed in \verb #$SRC_FILES#, the relevant compiler flags 
 
 As mentioned in section~\ref{sec:software_stack} we have hipSYCL available on CSD3 that can target NVidia A100 GPUs.
 It is accessible through the module system with
-\begin{verbatim} 
+\begin{verbatim}
 module load hipsycl/0.9.2
 \end{verbatim}.
 Note that we required version 0.9.2, instead of 0.9.1 because support for atomic operations was added in 0.9.2.
 Additionally for running a binary produced with hipSYCL it may be necessary to load a module providing newer libstdc++, for example:
-\begin{verbatim} 
+\begin{verbatim}
 module load gcc/9.4.0
 \end{verbatim}
 After the modifications to namespaces described in Section~\ref{sec:openqcd_namespaces}, we were able to use it to compile with CPU \texttt{omp} and GPU \texttt{cuda} backends.
@@ -157,7 +157,7 @@ To avoid this issue, it is recommended to name the kernels using a class passed 
 \begin{verbatim}
     q.parallel_for<class name_of_my_kernel>(...)
 \end{verbatim}
-Note, that the names given to kernels have to be unique, ie. not clash with names of functions or other code constructs.
+Note, that the names given to kernels have to be unique, i.e.\ not clash with names of functions or other code constructs.
 
 Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
 We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
