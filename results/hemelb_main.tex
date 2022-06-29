@@ -177,7 +177,7 @@ Finally, warnings were also issued for parameters declared in the CUDA code as `
 \end{verbatim}
 
 \subsubsection{Compiling}
-One problem detected is that the CMakeLists.txt file hasn't been adjusted accordingly with the dpct compatibility tool. The source files that were modified (extension changed to *.dp.cpp) were not updated. In our case this involves the following files:
+One problem detected is that the CMakeLists.txt file hasn't been adjusted accordingly after running the dpct compatibility tool. The source files that were modified (extension changed to *.dp.cpp) were not updated. In our case this involves the following files:
 \begin{verbatim}
 ./main.dp.cpp
 ./SimulationMaster.dp.cpp
@@ -194,6 +194,28 @@ One problem detected is that the CMakeLists.txt file hasn't been adjusted accord
 ./lb/iolets/InOutLetWomersleyVelocity.cc.dp.cpp
 ./lb/iolets/InOutLetCosine.cc.dp.cpp
 \end{verbatim}
+
+We had to manually modify the following files
+\begin{verbatim}
+    ./extraction/CMakeLists.txt
+    ./geometry/CMakeLists.txt
+    ./lb/CMakeLists.txt
+    ./net/CMakeLists.txt
+    ./colloids/CMakeLists.txt
+\end{verbatim}
+and modify the CMAKE\_CXX\_FLAGS in the CMakeLists.txt file
+\begin{verbatim}
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -fsycl-targets=nvptx64-nvidia-cuda")
+\end{verbatim}
+
+We had to adjust the C++ standard to at least 17
+\begin{verbatim}
+warning: DPCPP does not support C++ version earlier than C++17. 
+Some features might not be available.
+\end{verbatim}
+
+Further compiling problems related to the pow function
+
 
 \subsubsection{General Comments}
 Generally, we must note that the warnings are clear and running the dpct compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can still carry out.    
