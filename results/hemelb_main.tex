@@ -11,7 +11,7 @@
 Computational fluid dynamics represents a significant use case for high performance computing in many fields of engineering and science.
 Of the many techniques available in this field, the lattice Boltzmann method (LBM) has gained traction in the community for its ability to be both simply deployed for parallel computation and its facility to handle complex geometric and moving boundary conditions.
 The HemeLB code\footnote{\url{https://github.com/hemelb-codes}} uses the LBM to study 3D blood flow in human-scale vascular domains and has been optimised to handle the sparse geometries characteristic of these problems.
-In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG (\textbf{citation}) whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
+In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG (~\cite{mccullough2021towards}) whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
 
 The current GPU ports of HemeLB have been developed using the CUDA framework.
 Whilst this has been suitable for the current generations of HPC infrastructure, the imminent arrival of alternative accelerator hardware has necessitated the implementation of more platform-agnostic coding structures.
@@ -249,5 +249,7 @@ JM:
 
 
 \subsubsection{Estimate of Development Effort}
+Rough e
+
 
 \end{document}
