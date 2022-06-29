@@ -61,7 +61,7 @@ Only relatively short loops within sub steps of the mesh creation routines were 
 
 Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware. 
 
-After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation. Since this requires major restructuring of the code it was not possible to port withing the scope of this project. 
+After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation. Since this requires major restructuring of the code it was not possible to port withing the scope of this project and is still ongoing. 
 
 \subsubsection{Intel oneAPI Math Kernel Library}
 As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, don't support the use of accelerators. Intel oneAPI Math Kernel Library offers FFTW3 (and FFTW2) interfaces to the Fast Fourier Transform functionality. Therefore allowing oneMKL to be used as a drop in replacement for FFTW. On CPU we don't see much performance changes between oneMKL and FFTW3 but will test this further on Intel GPUs. 
