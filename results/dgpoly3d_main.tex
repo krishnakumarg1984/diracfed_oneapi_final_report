@@ -6,6 +6,7 @@
 
 \begin{document}
 
+
 \subsection{dGpoly3D}\label{sec:dgpoly3d}
 
 Discontinuous Galerkin (dG) methods on meshes consisting of polytopic elements have received considerable attention in recent years.
@@ -18,7 +19,7 @@ The implementation of arbitrary order quadrature rules over polytopic domains is
 The code first subdivides each 3D polytopic element into simplicial sub-elements (tetrahedrons) and any co-hyperplanar 2D faces into simplicial sub-faces (triangles), it then precomputes the sparsity pattern of the stiffness and mass matrix and stores it in CSR format and finally populates the matrix with the quadrature values for each simplex of the simplicial subdivision.
 Different kernels are called for each term of the bilinear form, since the workload of each term can be substantially different.
 For example, the kernel that calculates the integral over the elements needs a 3D quadrature rule, compared to the kernel over the interior faces which needs a 2D quadrature rule and thus less integration points.
-For this project we will port one of the kernels, the kernel over the elemental integrals.
+For this project we will port to SYCL one of the kernels, the kernel over the elemental integrals.
 This kernel spawns as many threads as there are tetrahedrons on the mesh and for each tetrahedron it computes the contribution of this simplex and writes it into the main block diagonal of the matrix using atomic operations.
 Atomic operations are needed since threads with contiguous thread id's might belong in the same polyhedron and thus will try to update the same memory location simultaneously.
 
@@ -26,9 +27,9 @@ Atomic operations are needed since threads with contiguous thread id's might bel
 The code is a combination of Python scripts for the non computationally demanding parts along with native CUDA kernels for the matrix assembly process, called from within Python with the PyCUDA module.
 The code was executed for different mesh sizes and with $p=2$ (the degree of the polynomial on every polyhedron) and input and output data to and from the kernel were captured and stored, both to be able to execute the kernel without having to do the initialization steps every time but also to be used in a unit test.
 
-Since Intel's DPC++ Compatibility tool would not be able to port the CUDA API calls (written in PyCUDA), a minimal C++ code to drive the kernel was written.
-This code reads the input and output data from disk, performs the memory transfers from and to the device, calls the kernel and finally the unit test.
-The unit test checks if the matrix entries match within a tolerance with the original values and for this a C++ version of Python's float comparison \texttt{math.isclose()} function was written, that takes as parameters both a relative and an absolute tolerance and returns True if
+Since Intel's DPC++ Compatibility tool would not be able to port the CUDA API calls (written in PyCUDA), a minimal C++ code\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed}} to drive the kernel was written.
+This code reads the input and output data from disk, performs the memory transfers from and to the device, calls the kernel and finally runs the unit test.
+The unit test checks if the matrix entries match within a tolerance with the original values and for this a C++ version of Python's float comparison \texttt{math.isclose()} function was written\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/f43ea3157ece59f9b29857d3ee3cff7efb87e975}}, that takes as parameters both a relative and an absolute tolerance and returns True if
 \begin{verbatim}
 abs(x - y) <= max(rel_tol * max(abs(x), abs(y)), abs_tol))
 \end{verbatim}
@@ -36,9 +37,10 @@ otherwise it returns False.
 For the following comparisons we've set the relative tolerance to $1\%$ and the absolute to $10^{-5}$.
 
 \subsubsection{Porting the code}\label{sec:dgpoly3d_porting}
-We ported the code using Intel's DPC++ Compatibility tool (\texttt{dpct}).
-Porting completed without errors and the compatibility tool added inline comments to explain some of its decisions or even propose changes (for example in one place where we access with atomic operations an array residing in global memory, it proposed a change in case the array is in local memory instead).
-We also automatically created a \texttt{Makefile} with the \texttt{--gen-build-script} flag.
+We ported the code using Intel's DPC++ Compatibility Tool (\texttt{dpct}).
+Porting completed without errors and the compatibility tool added inline comments to explain some of its decisions or even propose changes (for example in one place where we update with atomic operations an array residing in global memory, it proposed a change in case the array is in local memory instead).
+The \texttt{cudaMalloc} and \texttt{cudaMemcpy} operations were converted to explicit Unified Shared Memory allocations via \texttt{sycl::malloc\_device}.
+We also automatically created a \texttt{Makefile} with the \texttt{--gen-build-script} flag\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/58ea1f6ad2f72386e2561feb8cb18caf602462cd}}.
 However, compiling failed with the following error message:
 \begin{verbatim}
   no known conversion from 'dpct::accessor<float,
@@ -62,51 +64,129 @@ and it was included in the kernel call as
   dpct::accessor<float, dpct::constant, 2> legendre
 \end{verbatim}
 the type was not changed in the \texttt{eval1dLegendre} function.
-After changing the parameter type for the first argument in the function definition from \texttt{float legendre[][3]} to \texttt{dpct::accessor<float, dpct::constant, 2> legendre} the ported code compiled succesfully.
+After changing the parameter type for the first argument in the function definition from \texttt{float legendre[][3]} to \texttt{dpct::accessor<float, dpct::constant, 2> legendre} the ported code compiled successfully\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/196a795771512bb32e92896cc4e225c429473835}}.
+
+Even though at this stage we were successfull at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g. hipSYCL), there was still an obvious change that needed to happen.
+The DPC++ Compatibility Tool included the \texttt{dpct.hpp} header file in some of the source files and added in three places code from the \texttt{dpct} namespace.
+Those were in the device selector, in the constant memory accessor and in the atomic add operation.
+
+The first was trivial to modify\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/3219aa05f4a95bc719fa1e7aae141fbda3a03bf2}} and we only changed the
+\begin{verbatim}
+dpct::device_ext &dev_ct1 = dpct::get_current_device();
+sycl::queue &q_ct1 = dev_ct1.default_queue();
+\end{verbatim}
+to
+\begin{verbatim}
+sycl::queue q_ct1{ sycl::default_selector{} };
+\end{verbatim}
+
+For the constant memory instead of using \texttt{dpct::constant\_memory} and \texttt{dpct::accessor}, there was various valid solutions but we decided to use standard SYCL buffers and accessors in read mode and with the constant buffer target\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/c12cd57df6f8c19b21601da750a2c612dc58d616}}.
+\begin{verbatim}
+sycl::buffer<Real, 2> array_buf(array.data(),
+    sycl::range<2>{col_size, col_size});
+
+auto array_acc_ct1 = array_buf.get_access<sycl::access::mode::read,
+    sycl::access::target::constant_buffer>(cgh);
+
+sycl::accessor<Real, 2, sycl::access::mode::read,
+    sycl::access::target::constant_buffer> array
+\end{verbatim}
+
+Finally, for the atomic add operation, we tried originally to change the \texttt{dpct::atomic\_fetch\_add} to \texttt{sycl::atomic\_fetch\_add} but Intel oneAPI 2022.1 was giving the error \texttt{SYCL atomic function not available for float type}.
+Instead, we decided to use the same solution that our colleagues working with the OpenQCD code found, i.e. to copy the float implementation of the \texttt{atomic\_fetch\_add} from the \texttt{atomic.hpp} header file provided with the Compatibility Tool\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/7820fd8a891a0b682876c425d5d8919182040770}}.
+
+With the \texttt{dpct} namespace removed, an attempt to compile the code with hipSYCL failed due to the \texttt{SYCL\_EXTERNAL} macro.
+\texttt{SYCL\_EXTERNAL} is, according to the SYCL specification published by the Khronos Group, ``an optional macro that enables external linkage of SYCL functions and methods to be included in an SYCL kernel'' which hipSYCL doesn't support yet.
+A solution would be to include the definitions of those functions in their respective header files, so that we end up with a single translation unit.
+However, since this will inevitably violate the ``One Definition Rule'', we decided to abandon for now the hipSYCL compiler and in the following we only used Intel's DPC++ toolchain, targeting both CPUs and Nvidia GPUs with the CUDA backend.
 
 \subsubsection{Running the code}\label{sec:dgpoly3d_running}
-To start with, the simplified native CUDA code was tested on a workstation with an Nvidia 2060 (Turing) and in an HPC GPU cluster with A100's (Ampere).
+To start with, the simplified native CUDA code was tested on a workstation with an Nvidia 2060 6GB (Turing) and in an HPC GPU cluster with A100's 80GB (Ampere).
 In the first case we used CUDA SDK 11.6 and on the GPU cluster we compiled with CUDA SDK 11.4.
-We also compiled it with the optimization levels \texttt{-O0} up to \texttt{-O3} and with or without the \texttt{-use\_fast\_math} flag and in all cases the unit test passed with no errors.
+We also compiled the native CUDA code with the optimization levels \texttt{-O0} up to \texttt{-O3} and with or without the \texttt{-use\_fast\_math} flag and in all cases the unit test passed with no errors.
 
-Now, for the ported SYCL/DPC++ code multiple different platforms were used, both CPU based and GPU based.
-The GPU was once again the Nvidia Ampere A100 and the CPU based systems were one with dual Intel Icelake 8368Q and one with dual AMD EPYC 7763.
+Now, for the ported SYCL/DPC++ code multiple different platforms were used, both CPU and GPU based.
+The GPU was once again the Nvidia Ampere A100 80GB and the CPU based systems were one with dual Intel Icelake 8368Q and one with dual AMD EPYC 7763.
 To target the Nvidia GPU we compiled with the LLVM CUDA backend compiler with \texttt{clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda} and to target the CPU we compiled with both the DPC++ compiler (\texttt{dpcpp}) and with Intel's LLVM with \texttt{clang++ -fsycl} (which by default selects the generic spir64 target).
 The results of the unit test can be found on Table~\ref{tab:correctness}.
-
-\begin{table}[!htbp]
-	\begin{tabular}{@{}c c c c c@{}}
-		\toprule
-		    & \multicolumn{2}{c}{\textbf{dpcpp}} & \multicolumn{2}{c}{\textbf{clang++}}                               \\
-		\cmidrule(lr){2-3}\cmidrule(lr){4-5}
-		    & {Icelake 8368Q}                    & EPYC 7763                            & Icelake 8368Q & Ampere A100 \\
-		\midrule
-		-O0 & \qty{0.54507}{\percent} wrong      & \qty{0.54507}{\percent} wrong        & ---           & correct     \\
-		-O1 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
-		-O2 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
-		-O3 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
-		\bottomrule
-	\end{tabular}
-	\caption{\label{tab:correctness}}
-\end{table}
+According to those results, the unit tests failed when compiling with \texttt{dpcpp} regardless of the optimisation level or the selected CPU and succeeded when compiling with \texttt{clang++} and targeting both CPUs and GPUs.
+\begin{center}
+	\begin{table}
+		\begin{tabular}{||c c c c c||}
+			\hline
+			    & \multicolumn{2}{c}{dpcpp} & \multicolumn{2}{c||}{clang++}                               \\ [0.5ex]
+			\hline
+			    & Icelake 8368Q             & EPYC 7763                     & Icelake 8368Q & Ampere A100 \\ [0.5ex]
+			\hline\hline
+			-O0 & 0.545073\% wrong          & 0.545073\% wrong              & --             & correct    \\ [0.3ex]
+			\hline
+			-O1 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
+			\hline
+			-O2 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
+			\hline
+			-O3 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
+			\hline
+		\end{tabular}
+		\caption{\label{tab:correctness} Unit test results using both \texttt{dpcpp} and \texttt{clang++} and targeting both CPUs and GPUs using the default semantics for floating point calculations on both compilers. The percentage reported is over all expected non-zero entries of the matrix but since the elemental kernel populates only a fraction of those values (only those in the main block diagonal) the percentage appears to be small. Running the \texttt{clang++ -O0} compiled code on the Icelake 8368Q failed to finish.}
+	\end{table}
+\end{center}
 
 Further investigation suggests that this behaviour is due to different default semantics for floating point calculations between the two different compilers.
-According to Table~\ref{tab:semantics} the default model in \texttt{dpcpp} is \texttt{fast} while in \texttt{clang++} is \texttt{precise}.
+According to Table~\ref{tab:semantics} the default model in \texttt{dpcpp} is \texttt{fast} while in \texttt{clang++} is \texttt{precise} and the latter produces the correct results in both cases.
+For the reported benchmarks on Table~\ref{tab:benchmarks} we set the model to \texttt{precise} and the optimisation level to \texttt{O1} (same as in the native CUDA case).
 
-\begin{table}[!htbp]
-	\begin{tabular}{@{}lll@{}}
-		\toprule
-		\multirow{4}{*}{\texttt{dpcpp -O1}}          & ---                          & \qty{1.20335}{\percent} wrong \\
-		                                             & \texttt{-fp-model=fast   }   & \qty{1.20335}{\percent} wrong \\
-		                                             & \texttt{-fp-model=strict }   & \qty{0.54507}{\percent} wrong \\
-		                                             & \texttt{-fp-model=precise}   & correct                       \\
-		\midrule
-		\multirow{4}{*}{\texttt{clang++ -fsycl -O1}} & ---                          & correct                       \\
-		                                             & \texttt{-ffp-model=fast    } & \qty{1.20335}{\percent} wrong \\
-		                                             & \texttt{-ffp-model=strict }  & \qty{0.54507}{\percent} wrong \\
-		                                             & \texttt{-ffp-model=precise}  & correct                       \\ \bottomrule
-	\end{tabular}
-	\caption{\label{tab:semantics}}
-\end{table}
+\begin{center}
+	\begin{table}
+		\centering
+		\begin{tabular}{||ll|l||}
+			\hline
+			\multirow{4}{*}{dpcpp -O1}          & ---                & 1.20335\% wrong  \\
+			                                    & -fp-model=fast     & 1.20335\% wrong  \\
+			                                    & -fp-model=strict   & 0.545073\% wrong \\
+			                                    & -fp-model=precise  & correct          \\ \hline \hline
+			\multirow{4}{*}{clang++ -fsycl -O1} & ---                & correct          \\
+			                                    & -ffp-model=fast    & 1.20335\% wrong  \\
+			                                    & -ffp-model=strict  & 0.545073\% wrong \\
+			                                    & -ffp-model=precise & correct          \\ \hline
+		\end{tabular}
+		\caption{\label{tab:semantics}Unit test results using different floating point calculation semantics on a system with dual Icelake 8368Q. Using the \texttt{precise} model produces the correct results in both cases.}
+	\end{table}
+\end{center}
+
+
+\begin{center}
+	\begin{table}
+		\begin{tabular}{||c c | c c c c c||}
+			\hline
+			    &   & \multicolumn{2}{|c|}{native CUDA} & \multicolumn{3}{c||}{SYCL}                   \\ [0.5ex]
+		    \hline
+			    &   & \multicolumn{2}{|c|}{nvcc}        & \multicolumn{2}{c|}{dpcpp} & clang++         \\ [0.5ex]
+			\hline
+			Elements   & Memory  & 2060  & A100  & Intel 8368Q  & AMD EPYC 7763  & A100                \\ [0.5ex]
+			\hline\hline
+			196,608    & 1.2GiB  & 338   & 113   & 455          & 479            & 65                  \\ [0.5ex]
+			1,572,864  & 9.0GiB  & --    & 872   & 1076         & 1113           & 451                 \\ [0.5ex]
+			\hline
+		\end{tabular}
+		\caption{\label{tab:benchmarks}Time in milliseconds (best of 3) to run the kernel on two meshes with different sizes, excluding any memory transfers. In all cases we used the \texttt{-O1} optimisation flag and for the SYCL code we used the \texttt{precise} model, both with \texttt{dpcpp} and \texttt{clang++}. The larger of the two meshes does not fit in the 6GB VRAM of the Nvidia 2060.}
+	\end{table}
+\end{center}
+
+
+\subsubsection{Continuous integration}\label{sec:dgpoly3d_ci}
+We set a CI workflow on GitHub using Actions.
+This workflow uses the Intel oneAPI Basekit docker image from Dockehub, on which we are installing git-lfs to be able to pull the two mesh files from the \texttt{inout} directory.
+We then, compile the SYCL code in the \texttt{sycl} directory and run the code piping the output to \texttt{grep}.
+If we get the expected output, the test succeeds otherwise it fails.
+Those mesh sizes are usefull for unit testing but larger mesh sizes are needed for profiling, which the author can provide upon request.
+
+
+\subsubsection{Remarks}\label{sec:dgpoly3d_remarks}
+The author is an experienced CUDA developer with less experience working with C++ codes.
+For a simple code as ours, the ported code that the Compatibility Tool produced was not production ready and work needed so that it could compile.
+Furthermore, some decisions that the DPCT made, tied us with Intel's implementation and further work needed to decouple our code from those, namely the \texttt{dpct} namespace.
+We believe that those modifications need some experience with C/C++ or a ``coding maturity'', but the benefit of not being tied to a particular architecture (which we believe is one of the main reasons someone might pick SYCL, due to its open, cross-architecture and cross-vendor nature) makes it worth the effort.
+Nevertheless, we believe that, in this case, working with the ported code that the Compatibility Tool created was a very good starting point, compared to manually porting the whole codebase and thus was a more efficient use of our time.
+We are happy to see more options in the heterogeneous frameworks world, especially solutions like SYCL which is an open standard.
 
 \end{document}
