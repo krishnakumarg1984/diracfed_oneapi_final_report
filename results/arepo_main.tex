@@ -18,8 +18,8 @@ To the best of our knowledge, there is currently no version of this code that ca
 \subsubsection{Running the code}
 Arepo depends on several libraries that are necessary for compilation. 
     \begin{itemize}
-        \item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} Gnu Scientific Library as a random number generator and for numerical integration.
-        \item{\textbf{GMP \footnote{\url{}}}}
+        \item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} GNU Scientific Library as a random number generator and for numerical integration.
+        \item{\textbf{GMP \footnote{\url{https://gmplib.org/}}:}} GNU Multiple Precision Artithmetic Library to calculate exact geometric predictions
         \item{\textbf{FFTW3\footnote{\url{http://www.fftw.org/}}:}} Fastest Fourier Transform in the West is used in the particle-mesh algorithm
         \item{\textbf{HDF5\footnote{\url{https://support.hdfgroup.org/HDF5/doc/H5.intro.html}}:}} Hierarchical Data Format is used as the standard input/output format in Arepo. 
     \end{itemize}
@@ -61,7 +61,7 @@ Only relatively short loops within sub steps of the mesh creation routines were 
 Overall, this suggests that for a successful GPU port of Arepo it may not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware.
 For that, we are in active discussions with the developers at the University of Cambridge and take into account prior experience and publications in the scientific domain.
 
-\subsubsection{oneMKL}
+\subsubsection{Intel oneAPI Math Kernel Library}
 
 
 

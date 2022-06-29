@@ -70,7 +70,7 @@ This worked out of the box using the automatically generated Makefile simply usi
 
 To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
 
-In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environemnt, as mentioned in Section~\ref{sec:openqcd_porting}.
+In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environment, as mentioned in Section~\ref{sec:openqcd_porting}.
 In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend.
 The automatically generated Makefile did not work for the NVidia backend, and we manually modified it\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/42}} to simply contain a target of the type
 \begin{verbatim}
