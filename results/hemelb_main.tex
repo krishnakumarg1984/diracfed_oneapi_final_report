@@ -235,9 +235,13 @@ Further compiling problems related to the pow function
 
 
 \subsubsection{General Comments}
-In the first part of this effort, we extracted the key collision kernel of HemeLB into a single script and converted this to DPC++ using the dpct conversion tools. For codes of this nature
+In the first part of this effort, we extracted the key collision kernel of HemeLB into a single script and converted this to DPC++ using the dpct conversion tools. For codes of this level of complexity, The porting and code correction exercise was straightforward even for a developer with limited SYCL experience.
 
-Generally, we must note that the warnings are clear and running the dpct compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can still carry out.  
+For porting a more complex code such as the CUDA port of HemeLB\_GPU, much more time is needed to understand and complete the conversion process. As described above, further steps are needed to correctly capture and convert files within a compilation process orchestrated by CMake. Whilst the documentation describing this process is available, there appear to be fewer examples of such a process compared to single file projects. It was also noted that using the conversion tool also modified files that did not explicitly contain CUDA code. As such, a developer choosing to manually convert individual files within a CUDA project may not identify all changes needing to be made to adapt their project to DPC++.
+
+As the conversion to DPC++ makes some fundamental syntactical changes to the converted project files, it does require a user with only a CUDA background to become more familiar with the changes made to the code by the conversion tool and the operation of the SYCL architecture. The complexity of the converted code will likely govern how much new material must be learnt and modified to achieve a successful port to OneAPI. This also extends to any compilation errors that arise with the converted code, where dedicated SYCL knowledge may be needed to understand and correct them. This may be especially true for CUDA functions that do not have direct SYCL equivalents. For cod
+
+Generally speaking however, we note that the warnings are clear and running the dpct compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can still carry out.  
 
 JM:
 - documentation availability for porting larger/more complex codes - limited, examples mostly single file projects

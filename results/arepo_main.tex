@@ -51,24 +51,27 @@ To further test these findings, the Illustris 3 testcase [2] was used. Figure \r
 	\label{fig:arepo_blockvsnonblock} % chktex 24
 \end{figure}
 Second profiling outcome and original motivation for this analysis was to understand the distribution of run time across the different parts of a time step and subsequently to identify suitable candidates for GPU porting.
-The two most time-consuming parts proved to be the evaluation of gravitational forces, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between. 
+The two most time-consuming parts proved to be the evaluation of gravitational forces with a Tree particle Mesh algorithm, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between. 
 
  \subsubsection{OneAPI Offload Advisor}
 The next step in the analysis was to use Intel's Offload Advisor to see if these contain any kernels that would readily benefit from GPU offloading.
 However, with the current structure of the underlying algorithm the Offload Advisor judged every routine to suffer from too much overhead when ported to GPU.
 Only relatively short loops within sub steps of the mesh creation routines were classified as offload candidates that could potentially see any speed-up.
 
-Overall, this suggests that for a successful GPU port of Arepo it may not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware.
-For that, we are in active discussions with the developers at the University of Cambridge and take into account prior experience and publications in the scientific domain.
+Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly adaptation of the algorithm to better map to the target hardware. 
+
+After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation. Since this requires major restructuring of the code it was not possible to port withing the scope of this project. 
 
 \subsubsection{Intel oneAPI Math Kernel Library}
 As already mentioned Arepo depends on several third party libraries that currently, to our knowledge, don't support the use of accelerators. Intel oneAPI Math Kernel Library offers FFTW3 (and FFTW2) interfaces to the Fast Fourier Transform functionality. Therefore allowing oneMKL to be used as a drop in replacement for FFTW. On CPU we don't see much performance changes between oneMKL and FFTW3 but hope to test this further on Intel's GPUs. 
 
-\subsubseciton{Programming Model}
+\subsubsection{Programming Model}
 AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow Intel’s recommendation to use OpenMP 5 offloading to target GPUs. While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified. With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization. Giving us the opportunity to reevaluate our decision on using OpenMP 5 offload to using SYCL. 
 
-\subsubsection{}
+\subsubsection{Summary}
+
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
+%For that, we are in active discussions with the developers at the University of Cambridge and take into account prior experience and publications in the scientific domain.
 
 
 %\begin{itemize}
