@@ -18,7 +18,9 @@ The DW operator was ported to CUDA and a data layout optimization was performed 
 Since the DW operator was identified as the main hotspot in the code and a CUDA port had already been made, our approach was to follow Intel's Recommended Workflow illustrated in Figure~\ref{fig:intel-workflow}, starting from existing CUDA code, and use the Intel DPC++ Compatibility Tool (dpct) to generate DPC++ code from it.
 
 We performed the porting on CSD3.
-We found it difficult to work on the Intel DevCloud, since it did not have a CUDA library installed and dpct needs to access the CUDA header files.\todo{mention Intel tutorial on how to use dpct on DevCloud}Based on examples we found, others had worked around this by uploading their own CUDA headers to their DevCloud account, but this seemed too cumbersome.
+We found it difficult to work on the Intel DevCloud, since it did not have a CUDA library installed and dpct needs to access the CUDA header files.
+Intel can't provide CUDA headers because of copyright issues. However, they do have a tutorial on how to use \texttt{dpct} on the DevCloud\footnote{\url{https://www.intel.com/content/www/us/en/developer/articles/training/intel-dpcpp-compatibility-tool-training.html}}.
+As a short summary, the user has to provide the CUDA header files. The tutorial gives instructions on where to place them.
 
 On CSD3 our workflow for dpct was the following:
 
@@ -42,7 +44,8 @@ On CSD3 our workflow for dpct was the following:
 
 Since the build system used a simple Makefile, we used the intercept-build tool capture the source files and compiler commands from it.
 This simplified the use of dpct significantly.
-The --gen-build-script flag was used to automatically generate a new Makefile for the ported dpc++ code, although the generated Makefile required some manual editing afterwards.
+The \verb !--gen-build-script! flag was used to automatically generate a new Makefile for the ported dpc++ code, although the generated Makefile required some manual editing afterwards.
+We will describe that in more detail in Section~\ref{sec:openqcd_compiling}.
 
 After running dpct we got a list of warnings where dpct suggests attention is required from the developers.
 These are reasonably clear and additional information is available in the documentation.
@@ -54,21 +57,29 @@ From the point of portability, we note that dpct warns us when workgroup sizes a
 
 The dpc++ code produced by dpct includes a namespace \texttt{dpct} from header files within the OneAPI package.
 In our case this was limited to two functions \verb!dpct::atomic_fetch_add()! and \verb!{dpct::get_device()!.
-In order to make the code portable to other SYCL implementations one would need to remove the references to the (OneAPI specific) dpct namespace.
+In order to make the code portable to other SYCL implementations one would need to replace the references to the (OneAPI specific) \texttt{dpct} namespace with standard \texttt{sycl} functions, or custom code.
 
 The \verb!dpct::atomic_fetch_add()! function is included from the \texttt{atomics.hpp} header file.
 The header files are distributed with a fairly permissive Apache-2.0 license with LLVM exceptions that allows to re-use them as long as all the modifications are noted.
 Our solution was to include the \verb!dpct::atomic_fetch_add()! function within our source code.
 It is a fairly thin wrapper that calls to the \texttt{sycl} namespace.
 
-The \verb!dpct::get_device()! function seems to differ in no way in functionality from the function of the same name in the \texttt{sycl} namespace and can be replaced with no obvious issues.\todo{@Tuomas Report on the porting of getdevice calls}
+The \verb!dpct::get_current_device()! function returns a handle to the current device of type \verb #dpct::device_ext#. In the generated code, this handle is then used to get the default queue object using the \verb #default_queue()# method. It is not clear why this custom approach has been used by \texttt{dpct}. The default queue of the current device can be retrieved by standard \texttt{sycl} calls using
+
+\begin{verbatim}
+  sycl::queue q_ct1{ sycl::default_selector{} }
+\end{verbatim}
+
+which is what used to replace the \texttt{dpct} code\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/23}}. As an additional benefit, the \texttt{dpct} generated code was retrieving the current device and default queue in each kernel that was allocating or freeing memory on the device, creating unnecessary overhead. Using standard \texttt{sycl} namespace calls, we were able to create a queue once in the main function, and pass a reference to it to all kernels.
 
 \subsubsection{Compiling}\label{sec:openqcd_compiling}
 
-To compile the code targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package.
+\paragraph{OneAPI}
+
+To compile the code with OneAPI targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package.
 This worked out of the box using the automatically generated Makefile simply using the \texttt{make} command.
 
-To compile the code targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
+To compile the code with OneAPI targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ) on CSD3.
 
 In addition to the compiler module, we had to load a recent \verb #gcc/11.2.0# module, and initialise the OneAPI environment, as mentioned in Section~\ref{sec:openqcd_porting}.
 In addition to the usual Makefile options, one has to pass the flags \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# to compile sycl code targeting the NVidia CUDA backend.
@@ -79,9 +90,39 @@ my_target: $(SRC_FILES)
 \end{verbatim}
 with the source files listed in \verb #$SRC_FILES#, the relevant compiler flags in \verb #$(CFLAGS)# and a path to the header files in \verb #$(INCLUDES)#.
 
-\todo{@Tuomas Add compiling with HIPSycl}
+\paragraph{hipSYCL}
+
+As mentioned in section~\ref{sec:software_stack} we have hipSYCL available on CSD3 that can target NVidia A100 GPUs.
+It is accessible through the module system with
+\begin{verbatim} 
+module load hipsycl/0.9.2
+\end{verbatim}.
+Note that we required version 0.9.2, instead of 0.9.1 because support for atomic operations was added in 0.9.2.
+Additionally for running a binary produced with hipSYCL it may be necessary to load a module providing newer libstdc++, for example:
+\begin{verbatim} 
+module load gcc/9.4.0
+\end{verbatim}
+After the modifications to namespaces described in Section~\ref{sec:openqcd_namespaces}, we were able to use it to compile with CPU \texttt{omp} and GPU \texttt{cuda} backends.
+One additional code modification was required, The hipSYCL implementation on wraps the \texttt{sycl} namespace inside the \texttt{cl} namespace.
+We had to add \verb !using namespace cl;! to the dpcpp source file, this did not break compatibility with OneAPI.
+To target Intel CPUs we added the \verb !--hipsycl-targets=omp! compiler flag, and to target NVidia A100 GPUs we added the \verb !--hipsycl-targets=cuda:sm_80! compiler flag.
+Alternatively, one can modify the \verb !HIPSYCL_TARGETS! and \verb !HIPSYCL_GPU_ARCH! environment variables.
+
+As further mentioned in section~\ref{sec:software_stack} it would be possible to install hipSYCL on Cosma8 to run on AMD GPUs. We made an effort to install it using the spack package manager.
+Installing Spack is fairly straightforward, all that is required is cloning the GitHub repository\footnote{\url{https://github.com/spack/spack}} and ensuring python is installed.
+This can be done in the user's home directory on a HPC system.
+To be used effectively, spack requires an environment that points to system packages that should not be reinstalled by the user.
+On Cosma8, we used an environment developed by the ExCALIBUR H\&ES project\footnote{\url{https://github.com/ukri-excalibur/excalibur-tests/blob/main/spack-environments/cosma8/compute-node/spack.yaml}}.
+Once the environment is set up, we can install hipsycl with the system-provided version of the \texttt{boost} library and \texttt{gcc} compiler by
+\begin{verbatim}
+spack install hipsycl ^boost@1.67.0 %gcc@10.2.0
+\end{verbatim}
+The installed hipSYCL was successful in compiling for the CPU backend on Cosma8.
+However, we discovered that the spack recipe did not support the ROCm backend\footnote{\url{https://github.com/UCL/openqcd-oneapi/issues/29}}, which is necessary in order to compile for AMD GPUs. The only viable way forward seems for the local sysadmin team to install hipSYCL from source.
+
+\paragraph{ComputeCPP}
+
 \todo{@Krishna Add (issues with) compiling with ComputeCPP}
-\todo{@Tuomas Add (issues with) compiling on AMD}
 
 \subsubsection{Testing}\label{testing_openqcd}
 
@@ -91,20 +132,18 @@ However, we were able to recover the original reference data and verify the CUDA
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
 This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
-\todo{@Tuomas report on CI}
-
 \subsubsection{Continuous Integration}
 
-It is possible to install prebuilt binaries of both OneAPI and HipSYCL compilers from repositories relatively quickly, which enables us to use CI workflows during the development work.
+It is possible to install prebuilt binaries of both OneAPI and hipSYCL compilers from repositories relatively quickly, which enables us to use CI workflows during the development work.
 CI helps catch errors quickly, and ensure that code merged into the main development branch successfully builds and executes test cases.
 It is standard practice in indurstry and we warmly recommend it for scientific software projects.
 We chose to use GitHub Actions as the CI platform of our choice, due to good integration with the GitHub source repository and relatively friendly pricing rules, which allow us to run our CI jobs free of charge.
 In GitHub Actions, the user defines a workflow in a \verb #.yaml# file which can consist of any number of arbitrary steps.
-We implemented a simple workflow that runs the main executable on two data sets, using the OneAPI\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/oneapi.yml}} and HIPSYCL\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/hipsycl.yml}} compilers, on a CPU-only machine running the latest Ubuntu version available.
+We implemented a simple workflow that runs the main executable on two data sets, using the OneAPI\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/oneapi.yml}} and hipSYCL\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/hipsycl.yml}} compilers, on a CPU-only machine running the latest Ubuntu version available.
 It was not possible to test the GPU builds at this time.
 To install the OneAPI compiler, we followed this blog\footnote{\url{https://neelravi.com/post/oneapi-github-workflow/}} and Intel's instructions\footnote{\oneapiaptinstall}.
 Installing the whole OneAPI package would take too long for the CI job, the main issue was finding the right packages for installing the \verb #dpcpp# compiler only.
-To install HIPSycl, we used instructions for installing from repositories from the developers\footnote{\hipsyclinstallfromrepos}.
+To install hipSYCL, we used instructions for installing from repositories from the developers\footnote{\hipsyclinstallfromrepos}.
 
 \subsubsection{Performance}\label{sec:openqcd_performance}
 
@@ -118,7 +157,7 @@ To avoid this issue, it is recommended to name the kernels using a class passed 
 \begin{verbatim}
     q.parallel_for<class name_of_my_kernel>(...)
 \end{verbatim}
-Note, that the names given to kernels have to be unique, i.e.\ not clash with names of functions or other code constructs.
+Note, that the names given to kernels have to be unique, ie. not clash with names of functions or other code constructs.
 
 Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
 We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
@@ -130,9 +169,7 @@ The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUD
 It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
 This requires further study and optimization.\todo{@Tuomas Add what we found. Occupancy vs register pressure seems to be the main indicator}
 
-\subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
-
-\todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
+Changes to workgroup size did not have a significant effect on performance on NVidia A100's.
 
 \begin{center}
 	\begin{table}
@@ -152,22 +189,22 @@ This requires further study and optimization.\todo{@Tuomas Add what we found. Oc
 	\end{table}
 \end{center}
 
-\todo{@Tuomas Update table with HIPSycl performance on NVidia A100's}
+\todo{@Tuomas Update table with HIPSycl performance on NVidia A100's and add Occupancy and register use}
 
-\subsubsection{Ideas for Future Work}\label{sec:openqcd_future_work}
+\subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
-Here we give a brief summary of interesting topics that could be investigated further within the rest of this project.
-
-\begin{itemize}
-	\item The workgroup size used by the kernels was hand-tuned to 128 for the V100 architecture. In SYCL we can query the device for its maximum workgroup size so it might be possible to make this portable by automatically detecting a suitable size.\todo{Still TODO}
-	\item The profiling with \verb #ncu# suggests that there is unnecessary memory movement in the kernels generated in the SYCL code. Identifying and eliminating them seems like the most obvious path to getting closer to the CUDA performance.\todo{See comments above regarding occupancy}
-	\item The porting approach with \verb #dpct# was remarkably successful in this case. It would be interesting to see if we can port more kernels with the same level of effort.\todo{Outside scope of this project}
-	\item Compile with hipSYCL and ComputeCpp and compare performance.\todo{See notes in compiling.}
-	\item Both the CUDA and SYCL ports are restricted to two test cases and can't be used in the production code at the moment. For the research team, it would be useful if these ports could be upstreamed to the main development.\todo{Not done within this project but could be in scope for future work by DiRAC. Add our advice on upstreaming strategy.}
-	\item The correctness of the code is verified by comparing the final result of the computation against reference data. There would be scope to add unit tests to test the code more thoroughly.\todo{See notes in testing}
-	\item A sustainable solution for the storage and access of the reference data sets needs to be found and implemented. \todo{See notes in testing}
-\end{itemize}
+\todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
 
 \subsubsection{Estimate of Development Effort}\label{sec:openqcd_personhours}
+
+We had two developers (TK and KG) working on openqcd for most of the project duration.
+This strategy helps us routinely use good software development practices, such as pair programming and code review.
+The planned time allocation was 50~\% of time from both developers, however due to unforeseen personal circumstances we were not able to deliver all of the allocated time.
+The starting point of the project was both developers were proficient c++ programmers, with varying knowledge of C, CUDA, and SYCL, but not familiar at all with the openqcd codebase.
+As a very rough estimate, out of the six months spent on the project, the first two were spent getting familiar with the code, the Intel tools, and the programming languages.
+The first meaningful commits to the repository were made two months after the start of the project\footnote{\url{https://github.com/UCL/openqcd-oneapi/commits/arc_dev}}, with fairly rapid development in the following month.
+We spent a total of approximately 330 hours of development time within the six month period. This includes the development time, but also the time spent going thorugh tutorials, meetings with the team, reading textbooks, planning and design.
+In our experience, with the automatic translation tool \texttt{dpct}, it is quite straightforward to port preexisting CUDA code into a SYCL code that will compile with OneAPI and run successfully on CPU and GPU hardware.
+We estimate that most of the development effort went into making the code portable across different SYCL compilers, setting up the testing infrastructure and analysing the performance.
 
 \end{document}
