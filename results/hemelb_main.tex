@@ -11,7 +11,7 @@
 Computational fluid dynamics represents a significant use case for high performance computing in many fields of engineering and science.
 Of the many techniques available in this field, the lattice Boltzmann method (LBM) has gained traction in the community for its ability to be both simply deployed for parallel computation and its facility to handle complex geometric and moving boundary conditions.
 The HemeLB code\footnote{\url{https://github.com/hemelb-codes}} uses the LBM to study 3D blood flow in human-scale vascular domains and has been optimised to handle the sparse geometries characteristic of these problems.
-In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG (~\cite{mccullough2021towards}) whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
+In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG~\cite{mccullough2021towards} whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
 
 The current GPU ports of HemeLB have been developed using the CUDA framework.
 Whilst this has been suitable for the current generations of HPC infrastructure, the imminent arrival of alternative accelerator hardware has necessitated the implementation of more platform-agnostic coding structures.
@@ -23,7 +23,7 @@ As such, conversion needs to be done locally or on a cluster that contains both 
 Additionally, the majority of resources on the use of DPCT focus on simple, single file, examples of CUDA code.
 In reality, porting a mature code will require the conversion and correction of several files to ensure a fully operational application is able to be compiled.
 This is further complicated by features such as MPI communication between multiple GPUs.
-For this current exercise, we have extracted a single HemeLB collision kernel to test the performance variation between a native CUDA implementation and that converted to DPC++.
+For the initial porting exercise, we have extracted a single HemeLB collision kernel to test the performance variation between a native CUDA implementation and that converted to DPC++.
 The chosen kernel computes the single-relaxation time collision function used by the LBM to solve fluid flow within the simulation domain.
 This is used to update the vast majority of sites at each time step and represents the bulk of computation within an iteration.
 
@@ -96,13 +96,13 @@ Being a mature code, conducting such a project port will more strongly test the 
 
 
 \subsubsection{Porting the full HemeLB\_GPU code}
-We further tried porting the full HemeLB\_GPU CUDA code to the OneAPI framework on CSD3. This is a more complex situation, as it involves migrating multiple files to DPC++ and relies on CMake to build and compile the project.    
+We further tried porting the full HemeLB\_GPU CUDA code\footnote{\url{https://github.com/UCL-CCS/HemePure-GPU}} to the OneAPI framework on CSD3. This is a more complex situation, as it involves migrating multiple files to DPC++ and relies on CMake to build and compile the project.    
 
 HemeLB relies on a few dependencies (ParMETIS, Boost, CTemplate, TinyXML), which need to be installed prior to compiling the source code. Hence, one issue that needs to be resolved to ensure fair performance comparison is having the right modules for building/compiling dependencies and native source CUDA code, before repeating the same procedure for the ported DPC++ code. Whilst HemeLB compilation is generally straightforward, the ease of migration to a new machine is always something of an unknown.
 
 Our workflow on CSD3 was the following:
 \begin{enumerate}
-    \item Set up modules and the oneAPI environment
+    \item Set up modules and the OneAPI environment
     \begin{verbatim}
 module purge
 module use /usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/
@@ -111,7 +111,7 @@ source /usr/local/software/intel/oneapi/2022.1/setvars.sh --force
 module load rhel8/slurm dot cmake singularity/current rhel8/global cuda/11.4 /
 rhel8/default-amp libtirpc/1.2.6/gcc-9.4.0-duam2pr gcc/9.4.0/gcc-11.2.0-72sgv5z python/3.8.11/gcc-9.4.0-yb6rzr6
     \end{verbatim}
-    \item Run dpct to migrate the full HemeLB\_GPU CUDA code
+    \item Run DPCT to migrate the full HemeLB\_GPU CUDA code
     \item Compile the DPC++ code 
 \end{enumerate}
 
@@ -140,14 +140,14 @@ The source files, which specifically contain CUDA code and need to be ported to 
 
 In principle, there are two approaches for migrating CUDA codes to DPC++. 
 The first one involves a file-to-file manual migration, which is a good choice for migrating a few files.
-For HemeLB, however, this is not the case. Hence, we follow an alternative approach, which relies on cmake and passing the compilation database (JSON file) to dpct for migrating the full project to DPC++.    
+For HemeLB, however, this is not the case. Hence, we follow an alternative approach, which relies on CMake and passing the compilation database (JSON file) to DPCT for migrating the full project to DPC++.    
 %For projects using CMake commands it is useful to create a JSON file. This will contain the build options of the input project's files, i.e. include path and macros definitions. 
 The compilation database (compile\_commands.json file), containing the commands required to build the project, is generated by running 
 \begin{verbatim}
     intercept-build make
 \end{verbatim}
 %This creates the compile\_commands.json file. %(compilation database containing the commands required to build the project). 
-%Next running dpct with the compilation database generates the full ported DPC++ code with a list of warnings that need to be addressed. 
+%Next running DPCT with the compilation database generates the full ported DPC++ code with a list of warnings that need to be addressed. 
 
 The procedure for porting the full HemeLB code is therefore the following: 
 \begin{enumerate}
@@ -165,7 +165,7 @@ The procedure for porting the full HemeLB code is therefore the following:
 \end{enumerate}
 
 During the migration stage the majority of the warnings received involved CUDA error checking functionalities added in HemeLB\_GPU. 
-All CUDA runtime API calls return an error code (cudaError\_t is an enum type), while DPC++ uses exceptions to handle errors. Hence, the dpct tool added messages in the comments to indicate additional manual edits are likely necessary.
+All CUDA runtime API calls return an error code (cudaError\_t is an enum type), while DPC++ uses exceptions to handle errors. Hence, the tool added messages in the comments to indicate additional manual edits are likely necessary.
 For example, warnings were issued for the following in the CUDA code:  
 \begin{verbatim}
     cudaError_t error = cudaGetLastError();
@@ -194,7 +194,7 @@ Finally, warnings were also issued for parameters declared in the CUDA code as `
 \subsubsection{Compiling}
 We used Intel’s clang++ compiler and passed the flags ``-fsycl" and ``-fsycl-targets=nvptx64-nvidia-
 cuda" to compile SYCL code targeting the NVidia CUDA backend. 
-One problem detected was that the CMakeLists.txt file was not adjusted accordingly after running the dpct compatibility tool. The migrated source files (extension changed to *.dp.cpp) were not updated (in set root\_sources). In our case this involved the following files:
+One problem detected was that the CMakeLists.txt file was not adjusted accordingly after running the  compatibility tool. The migrated source files (extension changed to *.dp.cpp) were not updated (in set root\_sources). In our case this involved the following files:
 \begin{verbatim}
 ./main.dp.cpp
 ./SimulationMaster.dp.cpp
@@ -235,28 +235,16 @@ Further compiling problems related to the pow function
 
 
 \subsubsection{General Comments}
-In the first part of this effort, we extracted the key collision kernel of HemeLB into a single script and converted this to DPC++ using the dpct conversion tools. For codes of this level of complexity, The porting and code correction exercise was straightforward even for a developer with limited SYCL experience.
+In the first part of this effort, we extracted the key collision kernel of HemeLB into a single script and converted this to DPC++ using the  DPCT conversion tools. For a code of this level of complexity, The porting and code correction exercise was straightforward even for a developer with limited SYCL experience.
 
 For porting a more complex code such as the CUDA port of HemeLB\_GPU, much more time is needed to understand and complete the conversion process. As described above, further steps are needed to correctly capture and convert files within a compilation process orchestrated by CMake. Whilst the documentation describing this process is available, there appear to be fewer examples of such a process compared to single file projects. It was also noted that using the conversion tool also modified files that did not explicitly contain CUDA code. As such, a developer choosing to manually convert individual files within a CUDA project may not identify all changes needing to be made to adapt their project to DPC++.
 
-As the conversion to DPC++ makes some fundamental syntactical changes to the converted project files, it does require a user with only a CUDA background to become more familiar with the changes made to the code by the conversion tool and the operation of the SYCL architecture. The complexity of the converted code will likely govern how much new material must be learnt and modified to achieve a successful port to OneAPI. This also extends to any compilation errors that arise with the converted code, where dedicated SYCL knowledge may be needed to understand and correct them. This may be especially true for CUDA functions that do not have direct SYCL equivalents. For cod
+As the conversion to DPC++ makes some fundamental syntactical changes to the converted project files, it does require a user with only a CUDA background to become more familiar with the changes made to the code by the conversion tool and the operation of the SYCL architecture. The complexity of the converted code will likely govern how much new material must be learnt and modified to achieve a successful port to OneAPI. This also extends to any compilation errors that arise with the converted code, where dedicated SYCL knowledge may be needed to understand and correct them. This may be especially true for CUDA functions that do not have direct SYCL equivalents. For projects with older/legacy code within them, the requirement for a C++17 or above implementation may require further developer effort to ensure a successful conversion.
 
-Generally speaking however, we note that the warnings are clear and running the dpct compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can still carry out.  
-
-JM:
-- documentation availability for porting larger/more complex codes - limited, examples mostly single file projects
-- integrating to CMake build systems
-- Compilation errors - sorting out what is porting errors, what is platform/module related and what is user errors takes time to decipher
-- Some errors/warnings require SYCL knowledge to correct. 
-- Some CUDA functions may not have direct equivalents in SYCL, finding equivalent functions and appropriate syntax may be more hands on changes.
-- Code base needs to be C++17 or above to run. Will require further effort for converting codes with older/legacy components.
-- Conversion to OneAPI makes more syntax and operational changes to the code than may be seen with other conversion tools (e.g. HIP). This requires a user with CUDA background to become more familiar with the changes made to the code by the conversion tool and the operation of the SYCL architecture.
-- Manual conversion of just the files with CUDA content does not achieve the same result as using the conversion tools. These tools pick-up and convert extra files needed to complete compilation. 
-
-
+Generally speaking however, we note that the warnings are clear and running the  compatibility tool for porting the full CUDA HemeLB\_GPU code is straightforward. This makes the porting process a task that even a developer with little to no experience in SYCL can carry out.  
 
 \subsubsection{Estimate of Development Effort}
-Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e. dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI process. This estimate was made based on developers having no prior experience with OneAPI or SYCL prior to this exercise. As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g. with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA.
+Based on the effort conducted at the time of writing this report we would estimate that roughly 3 months FTE (i.e. dedicated work) would be required to fully convert the HemeLB\_GPU from CUDA to the OneAPI platform. This estimate was made based on developers having no prior experience with OneAPI or SYCL prior to this exercise. Unsupported developers from the same background may take longer. As the conversion to OneAPI invokes more fundamental code changes than some other GPU porting approaches (e.g. with HIP) it does demand the developer to gain more understanding of the SYCL and OneAPI programming approaches and the differences to CUDA. At the time of writing, a detailed performance comparison of the ported and CUDA version of the full HemeLB\_GPU had not been able to be made. Further developer time would be required to further tune the ported version of the code to minimise performance losses compared to the native CUDA version.
 
 
 \end{document}
