@@ -51,7 +51,7 @@ To further test these findings, the Illustris 3 testcase [2] was used. Figure \r
 	\label{fig:arepo_blockvsnonblock} % chktex 24
 \end{figure}
 Second profiling outcome and original motivation for this analysis was to understand the distribution of run time across the different parts of a time step and subsequently to identify suitable candidates for GPU porting.
-The two most time-consuming parts proved to be the evaluation of gravitational forces, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between.
+The two most time-consuming parts proved to be the evaluation of gravitational forces, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between. 
 
  \subsubsection{OneAPI Offload Advisor}
 The next step in the analysis was to use Intel's Offload Advisor to see if these contain any kernels that would readily benefit from GPU offloading.
