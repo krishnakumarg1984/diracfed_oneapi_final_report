@@ -66,6 +66,7 @@ As already mentioned Arepo depends on several third party libraries that current
 
 \subsubseciton{Programming Model}
 AREPO is written in C, parallelized with MPI and OpenMP. We intended to follow Intel’s recommendation to use OpenMP 5 offloading to target GPUs. While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified. With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization. 
+\paragraph{Porting}
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
 
