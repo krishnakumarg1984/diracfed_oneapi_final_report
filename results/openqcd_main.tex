@@ -122,7 +122,7 @@ However, we discovered that the spack recipe did not support the ROCm backend\fo
 
 \paragraph{ComputeCPP}
 
-\todo{@Krishna Add (issues with) compiling with ComputeCPP}
+% \todo{@Krishna Add (issues with) compiling with ComputeCPP}
 
 \subsubsection{Testing}\label{testing_openqcd}
 
@@ -130,7 +130,7 @@ The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fast
 We found generating the reference data difficult using the main CPU code based on\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
 However, we were able to recover the original reference data and verify the CUDA code.
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
-This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service.\todo{@Krishna, Report on difficulties with Git LFS on GitHub}
+This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service. % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
 \subsubsection{Continuous Integration}
 
@@ -189,11 +189,11 @@ Changes to workgroup size did not have a significant effect on performance on NV
 	\end{table}
 \end{center}
 
-\todo{@Tuomas Update table with HIPSycl performance on NVidia A100's and add Occupancy and register use}
+\todo{@Tuomas Update table with HIPSycl performance on NVidia A100s and add Occupancy and register use}
 
 \subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
-\todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
+% \todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
 
 \subsubsection{Estimate of Development Effort}\label{sec:openqcd_personhours}
 
