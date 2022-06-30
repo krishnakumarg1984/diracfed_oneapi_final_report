@@ -199,13 +199,10 @@ To install hipSYCL, we used instructions for installing from repositories from t
 To measure the performance on the NVidia A100 GPUs available on CSD3, we profiled the CUDA and the SYCL versions of the code with the NVidia NSight Compute profiler \texttt{ncu}.
 NVidia tools seemed the only feasible option for profiling performance on NVidia devices.
 
-We found NSight compute works reasonably well on SYCL code.
-The main issue is that since the kernels executed on the GPU are generated from lambda functions in SYCL, the function names are not retained as kernel names.
+We found that NSight compute works reasonably well on SYCL code.
+One issue is that, since the kernels executed on the GPU are generated from lambda functions in SYCL, function names are not retained as kernel names.
 Instead, the profiled kernels have generic names that can be hard to decipher if the code contains multiple kernels.
-To avoid this issue, it is recommended to name the kernels using a class passed as a template argument to \verb #parallel_for#, e.g.
-\begin{verbatim}
-    q.parallel_for<class name_of_my_kernel>(...)
-\end{verbatim}
+To avoid this issue, it is recommended to name the kernels using a class passed as a template argument to \verb #parallel_for#, \eg~\lstinline{q.parallel_for<class name_of_my_kernel>(...)}.
 Note, that the names given to kernels have to be unique, i.e.\ not clash with names of functions or other code constructs.
 
 The main profiling results are summarised in Table~\ref{tab:openqcd_perf}.
@@ -276,8 +273,8 @@ This could be a good topic for investigation in future projects or hackathons.
 We had two developers (TK and KG) working on openqcd for most of the project duration.
 This strategy helps us routinely use good software development practices, such as pair programming and code review.
 The planned time allocation was 50~\% of time from both developers, however due to unforeseen personal circumstances we were not able to deliver all of the allocated time.
-The starting point of the project was both developers were proficient c++ programmers, with varying knowledge of C, CUDA, and SYCL, but not familiar at all with the openqcd codebase.
-As a very rough estimate, out of the six months spent on the project, the first two were spent getting familiar with the code, the Intel tools, and the programming languages.
+At the start of the project, both developers were proficient c++ programmers, with varying knowledge of C, CUDA, and SYCL, but lacked familiarity with the openqcd codebase.
+As a rough estimate, of the six months spent on the project, the first two were spent getting familiar with the code, the Intel tools, and the programming languages.
 The first meaningful commits to the repository were made two months after the start of the project\footnote{\url{https://github.com/UCL/openqcd-oneapi/commits/arc_dev}}, with fairly rapid development in the following month.
 We spent a total of approximately 330 working hours of development time within the six month period.
 This includes the development time, but also the time spent going through tutorials, meetings with the team, reading textbooks, planning and design.
