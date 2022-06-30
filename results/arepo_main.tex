@@ -88,7 +88,8 @@ A prerequisite for any successful porting effort is a suitable control flow stru
 For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is already in place.
 The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs.
 
-Taking into account the profiling results, that the tree based force evaluation and the mesh generation are the most time consuming parts, as well as the findings from the Offload Advisor, that the current code structure is not suitable for easy code porting, we decided to look into restructuring the code to limit the dependencies of the expensive sections. This is now ongoing work and won't finish in the timeframe of this project. 
+Taking into account the profiling results, that the tree based force evaluation and the mesh generation are the most time consuming parts, as well as the findings from the Offload Advisor, that the current code structure is not suitable for easy code porting, we decided to look into restructuring the code to limit the dependencies of the expensive sections.
+This is now ongoing work and won't finish in the timeframe of this project.
 
 
 

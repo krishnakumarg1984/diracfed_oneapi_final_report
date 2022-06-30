@@ -133,7 +133,7 @@ The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fast
 We found generating the reference data difficult using the main CPU code based on the available documentation\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
 However, we were able to recover the original reference data and verify the CUDA code.
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
-This is not a very sustainable solution however, and should be moved to, e.g. GitHub LFS or a similar data storage service. % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
+This is not a very sustainable solution however, and should be moved to, e.g.\ GitHub LFS or a similar data storage service. % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
 \subsubsection{Continuous Integration}
 
@@ -162,11 +162,11 @@ To avoid this issue, it is recommended to name the kernels using a class passed 
 \end{verbatim}
 Note, that the names given to kernels have to be unique, i.e.\ not clash with names of functions or other code constructs.
 
-The main profiling results are summarised in Table~\ref{tab:openqcd_perf}. 
-We have profiled the three main kernels \texttt{mulpauli}, \texttt{doe} and \texttt{deo}. 
-The majority of the code is performing multiply and add operations of complex data types stored in nested data structures. 
-The original CUDA code clearly outperforms both OneAPI and hipSYCL ports. 
-The performace difference varies from roughly a factor 2 in the \texttt{doe} kernel, to a factor 6 in the \texttt{deo} kernel. 
+The main profiling results are summarised in Table~\ref{tab:openqcd_perf}.
+We have profiled the three main kernels \texttt{mulpauli}, \texttt{doe} and \texttt{deo}.
+The majority of the code is performing multiply and add operations of complex data types stored in nested data structures.
+The original CUDA code clearly outperforms both OneAPI and hipSYCL ports.
+The performace difference varies from roughly a factor 2 in the \texttt{doe} kernel, to a factor 6 in the \texttt{deo} kernel.
 
 A more detailed look into the profiling data shows that the main performance bottleneck is the memory throughput.
 The CUDA code uses the GPU global memory exclusively, whereas the SYCL ports are moving data in and out of both local and global memory.
@@ -176,7 +176,8 @@ If the registers of the GPU get oversubscribed, the data spills over to local me
 The extra data movement leads to a lower theoretical maximum occupancy of the GPU threads, with \texttt{ncu} reporting maximum occupancies of $65$~\%, $25$~\% and $25$~\% in the three main kernels for the CUDA code, $25$~\%, $18.75$~\% and $18.75$~\% for OneAPI and $18.75$~\%, $12.5$~\% and $18.75$~\% for hipSYCL, respectively.
 The achieved occupancies are reported in Table~\ref{tab:openqcd_perf} and follow the theoretical maxima very closely.
 
-The kernels are using a workgroup size of 128. We tried varying the workgroup size of the kernels between 64 and 256, but did not find any significant difference in performance.
+The kernels are using a workgroup size of 128.
+We tried varying the workgroup size of the kernels between 64 and 256, but did not find any significant difference in performance.
 In order to improve the performance of the SYCL code, our conclusion is the register use issue should be resolved, in order to raise the occupancy and eliminate the local memory usage.
 It is worth noting that the two compilers we used generate a different number of registers per thread from the same source code.
 It seems plausible that there is a deficiency in the current state of the SYCL compilers, rather than the source code itself.
@@ -232,7 +233,8 @@ The planned time allocation was 50~\% of time from both developers, however due 
 The starting point of the project was both developers were proficient c++ programmers, with varying knowledge of C, CUDA, and SYCL, but not familiar at all with the openqcd codebase.
 As a very rough estimate, out of the six months spent on the project, the first two were spent getting familiar with the code, the Intel tools, and the programming languages.
 The first meaningful commits to the repository were made two months after the start of the project\footnote{\url{https://github.com/UCL/openqcd-oneapi/commits/arc_dev}}, with fairly rapid development in the following month.
-We spent a total of approximately 330 working hours of development time within the six month period. This includes the development time, but also the time spent going through tutorials, meetings with the team, reading textbooks, planning and design.
+We spent a total of approximately 330 working hours of development time within the six month period.
+This includes the development time, but also the time spent going through tutorials, meetings with the team, reading textbooks, planning and design.
 In our experience, with the automatic translation tool \texttt{dpct}, it is quite straightforward to port pre-existing CUDA code into a SYCL code that will compile with OneAPI and run successfully on CPU and GPU hardware and the tool is accessible to even programmers who are SYCL novices.
 We estimate that most of the development effort went into making the code portable across different SYCL compilers, setting up the testing infrastructure and analysing the performance.
 
