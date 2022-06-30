@@ -1,5 +1,4 @@
 % chktex-file 36
-% chktex-file 44
 % chktex-file 8
 
 \documentclass[../main]{subfiles}
@@ -66,7 +65,7 @@ and it was included in the kernel call as
 the type was not changed in the \texttt{eval1dLegendre} function.
 After changing the parameter type for the first argument in the function definition from \texttt{float legendre[][3]} to \texttt{dpct::accessor<float, dpct::constant, 2> legendre} the ported code compiled successfully\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/196a795771512bb32e92896cc4e225c429473835}}.
 
-Even though at this stage we were successfull at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g. hipSYCL), there was still an obvious change that needed to happen.
+Even though at this stage we were successfull at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g.\ hipSYCL), there was still an obvious change that needed to happen.
 The DPC++ Compatibility Tool included the \texttt{dpct.hpp} header file in some of the source files and added in three places code from the \texttt{dpct} namespace.
 Those were in the device selector, in the constant memory accessor and in the atomic add operation.
 
@@ -93,7 +92,7 @@ sycl::accessor<Real, 2, sycl::access::mode::read,
 \end{verbatim}
 
 Finally, for the atomic add operation, we tried originally to change the \texttt{dpct::atomic\_fetch\_add} to \texttt{sycl::atomic\_fetch\_add} but Intel oneAPI 2022.1 was giving the error \texttt{SYCL atomic function not available for float type}.
-Instead, we decided to use the same solution that our colleagues working with the OpenQCD code found, i.e. to copy the float implementation of the \texttt{atomic\_fetch\_add} from the \texttt{atomic.hpp} header file provided with the Compatibility Tool\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/7820fd8a891a0b682876c425d5d8919182040770}}.
+Instead, we decided to use the same solution that our colleagues working with the OpenQCD code found, i.e.\ to copy the float implementation of the \texttt{atomic\_fetch\_add} from the \texttt{atomic.hpp} header file provided with the Compatibility Tool\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/7820fd8a891a0b682876c425d5d8919182040770}}.
 
 With the \texttt{dpct} namespace removed, an attempt to compile the code with hipSYCL failed due to the \texttt{SYCL\_EXTERNAL} macro.
 \texttt{SYCL\_EXTERNAL} is, according to the SYCL specification published by the Khronos Group, ``an optional macro that enables external linkage of SYCL functions and methods to be included in an SYCL kernel'' which hipSYCL doesn't support yet.
@@ -110,67 +109,59 @@ The GPU was once again the Nvidia Ampere A100 80GB and the CPU based systems wer
 To target the Nvidia GPU we compiled with the LLVM CUDA backend compiler with \texttt{clang++ -fsycl -fsycl-targets=nvptx64-nvidia-cuda} and to target the CPU we compiled with both the DPC++ compiler (\texttt{dpcpp}) and with Intel's LLVM with \texttt{clang++ -fsycl} (which by default selects the generic spir64 target).
 The results of the unit test can be found on Table~\ref{tab:correctness}.
 According to those results, the unit tests failed when compiling with \texttt{dpcpp} regardless of the optimisation level or the selected CPU and succeeded when compiling with \texttt{clang++} and targeting both CPUs and GPUs.
-\begin{center}
-	\begin{table}
-		\begin{tabular}{||c c c c c||}
-			\hline
-			    & \multicolumn{2}{c}{dpcpp} & \multicolumn{2}{c||}{clang++}                               \\ [0.5ex]
-			\hline
-			    & Icelake 8368Q             & EPYC 7763                     & Icelake 8368Q & Ampere A100 \\ [0.5ex]
-			\hline\hline
-			-O0 & 0.545073\% wrong          & 0.545073\% wrong              & --             & correct    \\ [0.3ex]
-			\hline
-			-O1 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-			-O2 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-			-O3 & 1.20335\% wrong           & 1.20545\% wrong               & correct       & correct     \\ [0.3ex]
-			\hline
-		\end{tabular}
-		\caption{\label{tab:correctness} Unit test results using both \texttt{dpcpp} and \texttt{clang++} and targeting both CPUs and GPUs using the default semantics for floating point calculations on both compilers. The percentage reported is over all expected non-zero entries of the matrix but since the elemental kernel populates only a fraction of those values (only those in the main block diagonal) the percentage appears to be small. Running the \texttt{clang++ -O0} compiled code on the Icelake 8368Q failed to finish.}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\begin{tabular}{@{}c c c c c@{}}
+		\toprule
+		    & \multicolumn{2}{c}{\textbf{dpcpp}} & \multicolumn{2}{c}{\textbf{clang++}}                               \\
+		\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+		    & {Icelake 8368Q}                    & EPYC 7763                            & Icelake 8368Q & Ampere A100 \\
+		\midrule
+		-O0 & \qty{0.54507}{\percent} wrong      & \qty{0.54507}{\percent} wrong        & ---           & correct     \\
+		-O1 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		-O2 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		-O3 & \qty{1.20335}{\percent} wrong      & \qty{1.20545}{\percent} wrong        & correct       & correct     \\
+		\bottomrule
+	\end{tabular}
+	\caption{\label{tab:correctness}}
+\end{table}
 
 Further investigation suggests that this behaviour is due to different default semantics for floating point calculations between the two different compilers.
 According to Table~\ref{tab:semantics} the default model in \texttt{dpcpp} is \texttt{fast} while in \texttt{clang++} is \texttt{precise} and the latter produces the correct results in both cases.
 For the reported benchmarks on Table~\ref{tab:benchmarks} we set the model to \texttt{precise} and the optimisation level to \texttt{O1} (same as in the native CUDA case).
 
-\begin{center}
-	\begin{table}
-		\centering
-		\begin{tabular}{||ll|l||}
-			\hline
-			\multirow{4}{*}{dpcpp -O1}          & ---                & 1.20335\% wrong  \\
-			                                    & -fp-model=fast     & 1.20335\% wrong  \\
-			                                    & -fp-model=strict   & 0.545073\% wrong \\
-			                                    & -fp-model=precise  & correct          \\ \hline \hline
-			\multirow{4}{*}{clang++ -fsycl -O1} & ---                & correct          \\
-			                                    & -ffp-model=fast    & 1.20335\% wrong  \\
-			                                    & -ffp-model=strict  & 0.545073\% wrong \\
-			                                    & -ffp-model=precise & correct          \\ \hline
-		\end{tabular}
-		\caption{\label{tab:semantics}Unit test results using different floating point calculation semantics on a system with dual Icelake 8368Q. Using the \texttt{precise} model produces the correct results in both cases.}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\begin{tabular}{@{}lll@{}}
+		\toprule
+		\multirow{4}{*}{\texttt{dpcpp -O1}}          & ---                          & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-fp-model=fast   }   & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-fp-model=strict }   & \qty{0.54507}{\percent} wrong \\
+		                                             & \texttt{-fp-model=precise}   & correct                       \\
+		\midrule
+		\multirow{4}{*}{\texttt{clang++ -fsycl -O1}} & ---                          & correct                       \\
+		                                             & \texttt{-ffp-model=fast    } & \qty{1.20335}{\percent} wrong \\
+		                                             & \texttt{-ffp-model=strict }  & \qty{0.54507}{\percent} wrong \\
+		                                             & \texttt{-ffp-model=precise}  & correct                       \\ \bottomrule
+	\end{tabular}
+	\caption{\label{tab:semantics}}
+\end{table}
 
 
-\begin{center}
-	\begin{table}
-		\begin{tabular}{||c c | c c c c c||}
-			\hline
-			    &   & \multicolumn{2}{|c|}{native CUDA} & \multicolumn{3}{c||}{SYCL}                   \\ [0.5ex]
-		    \hline
-			    &   & \multicolumn{2}{|c|}{nvcc}        & \multicolumn{2}{c|}{dpcpp} & clang++         \\ [0.5ex]
-			\hline
-			Elements   & Memory  & 2060  & A100  & Intel 8368Q  & AMD EPYC 7763  & A100                \\ [0.5ex]
-			\hline\hline
-			196,608    & 1.2GiB  & 338   & 113   & 455          & 479            & 65                  \\ [0.5ex]
-			1,572,864  & 9.0GiB  & --    & 872   & 1076         & 1113           & 451                 \\ [0.5ex]
-			\hline
-		\end{tabular}
-		\caption{\label{tab:benchmarks}Time in milliseconds (best of 3) to run the kernel on two meshes with different sizes, excluding any memory transfers. In all cases we used the \texttt{-O1} optimisation flag and for the SYCL code we used the \texttt{precise} model, both with \texttt{dpcpp} and \texttt{clang++}. The larger of the two meshes does not fit in the 6GB VRAM of the Nvidia 2060.}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\sisetup{group-minimum-digits = 5, group-separator = {,}, table-format=7, table-align-text-pre = false}
+	\begin{tabular}{@{}S S S[table-format=3.0] S[table-format=3.0] S[table-format=4.0] S[table-format=4.0] S[table-format=4.0]@{}}
+		\toprule
+		           &                       & \multicolumn{2}{c}{\thead{Native CUDA}} & \multicolumn{3}{c}{\thead{SYCL}}                                            \\
+		\cmidrule(lr){3-4}\cmidrule(r){5-7}
+		           &                       & \multicolumn{2}{c}{nvcc}                & \multicolumn{2}{c}{dpcpp}        & {clang++}                                \\
+		\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(l){7-7}
+		{Elements} & {Memory}              & 2060                                    & {A100}                           & {Intel 8368Q} & {AMD EPYC 7763} & {A100} \\
+		\midrule
+		196608     & \qty{1.2}{\gibi\byte} & 338                                     & 113                              & 455           & 479             & 65     \\
+		1572864    & \qty{9.0}{\gibi\byte} & {---}                                   & 872                              & 1076          & 1113            & 451    \\
+		\bottomrule
+	\end{tabular}
+	\caption{\label{tab:benchmarks}Time in milliseconds (best of 3) to run the kernel on two meshes with different sizes, excluding any memory transfers. In all cases we used the \texttt{-O1} optimisation flag and for the SYCL code we used the \texttt{precise} model, both with \texttt{dpcpp} and \texttt{clang++}. The larger of the two meshes does not fit in the 6GB VRAM of the Nvidia 2060.}
+\end{table}
 
 
 \subsubsection{Continuous integration}\label{sec:dgpoly3d_ci}

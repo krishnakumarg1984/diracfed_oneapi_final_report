@@ -69,16 +69,22 @@ Only relatively short loops within sub steps of the mesh creation routines were 
 Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly improve contouring in the algorithm to better capture compute intensive parts in sections with limited code footprint.
 
 
-%Taking into account the results from our profiling and the suggestions from oneAPI Offload Advisor, the mesh generation and the tree based force evaluation are the most time consuming parts but that they are too dependent on other sections of the code, we decided to 
-%With the results of the profiling with Vtunes, highlighting the tree based force evaluation and the mesh generation as the most time consuming parts as well as of the oneAPI Offload Advisor, suggesting that the 
+%Taking into account the results from our profiling and the suggestions from oneAPI Offload Advisor, the mesh generation and the tree based force evaluation are the most time consuming parts but that they are too dependent on other sections of the code, we decided to
+%With the results of the profiling with Vtunes, highlighting the tree based force evaluation and the mesh generation as the most time consuming parts as well as of the oneAPI Offload Advisor, suggesting that the
 %After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation.
 %Since this requires major restructuring of the code it was not possible to port within the scope of this project and is still ongoing.
 
 \subsubsection{Intel oneAPI Math Kernel Library}
-Intel onAPI Math Kernel Library offers an accelerator enabled version of Fast Fourier Transforms, as well as FFTW3 (and FFTW2) interface wrapper libraries to these functionalities. As far as we are aware currently none of the third party libraries, that Arepo depends on has accelerator enabled versions. With the interface wrapper libraries oneMKL can be used as a drop in replacement for FFTW, hence no program source code change is necessary. Using oneMKL does not degrade the CPU performance on CSD3 icelake partition. We will test the potential performance benefits on Intel GPUs further. 
+Intel onAPI Math Kernel Library offers an accelerator enabled version of Fast Fourier Transforms, as well as FFTW3 (and FFTW2) interface wrapper libraries to these functionalities.
+As far as we are aware currently none of the third party libraries, that Arepo depends on has accelerator enabled versions.
+With the interface wrapper libraries oneMKL can be used as a drop in replacement for FFTW, hence no program source code change is necessary.
+Using oneMKL does not degrade the CPU performance on CSD3 icelake partition.
+We will test the potential performance benefits on Intel GPUs further.
 
 \subsubsection{Programming Model}
-AREPO is written in C, parallelized with MPI and OpenMP. The original intention was to expand the existing OpenMP paralllization to include offload capabilities, in line with the intel recommendation for C programs. While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
+AREPO is written in C, parallelized with MPI and OpenMP.
+The original intention was to expand the existing OpenMP paralllization to include offload capabilities, in line with the intel recommendation for C programs.
+While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
 With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, hence opening the door to consider SYCL as an alternative to OpenMP 5 offload.
 
 
@@ -86,7 +92,7 @@ With confirmation from the AREPO developers at the University of Cambridge we de
 A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs.
 For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is already in place.
 The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs.
-This is beyond the scope of this project and still ongoing work. 
+This is beyond the scope of this project and still ongoing work.
 
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
