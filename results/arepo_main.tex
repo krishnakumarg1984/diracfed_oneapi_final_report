@@ -24,10 +24,10 @@ Arepo depends on several libraries that are necessary for compilation.
 	\item{\textbf{HDF5\footnote{\url{https://support.hdfgroup.org/HDF5/doc/H5.intro.html}}:}} Hierarchical Data Format is used as the standard input/output format in Arepo.
 \end{itemize}
 Arepo also needs a configuration and a parameter file for each example.
-The parameter File contains the run-time options whereas the configuration file specifies compile time settings.
-Special variables in the parameter file need to be modified for each platform, e.g.\ the maximum memory size, which should be around 95\% of the available RAM for every process or a variable that points to the correct data folder for initial condition files and output files.
+The parameter file contains the run-time options whereas the configuration file specifies compile time settings.
+Special variables in the parameter file need to be modified for each platform, e.g.\ the maximum memory size, which should be around 95\% of the available RAM for every process. Also in the parameter file are problem specific variables and those that points to the correct data folder for initial condition files and output files.
 Most Arepo branches come with a test suite of small examples to verify the code.
-Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data~\cite{Nelson_2015} publicly available can be used for longer test runs.
+Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and publicly available test data~\cite{Nelson_2015} can be used to check the performance for longer test runs.
 
 \subsubsection{Profiling with Vtune and Intel Trace Analyzer}
 In contrast to codes described above, where suitable kernels for GPU execution have already been identified in prior porting efforts, this selection process has to be done as an additional first step for this purely CPU-based code.
@@ -64,26 +64,21 @@ The two most time-consuming parts proved to be the evaluation of gravitational f
 \subsubsection{oneAPI Offload Advisor}
 The next step in the analysis was to use Intel's Offload Advisor to see if the previously identified time consuming parts contain any kernels that would readily benefit from GPU offloading.
 However, with the current structure of the underlying algorithm the Offload Advisor judged every routine to suffer from too much overhead when ported to GPU.
-Only relatively short loops within sub steps of the mesh creation routines were classified as offload candidates that could potentially see any speed-up.
+Only relatively short loops within sub steps of the mesh creation routines were classified as offload candidates that could potentially see a minimal speed-up.
 
 Overall, this suggests that for a successful GPU port of Arepo it will not be sufficient to port few individual kernels to achieve performance gains but requires a better understanding of the numerical method and possibly improve contouring in the algorithm to better capture compute intensive parts in sections with limited code footprint.
 
 
-%Taking into account the results from our profiling and the suggestions from oneAPI Offload Advisor, the mesh generation and the tree based force evaluation are the most time consuming parts but that they are too dependent on other sections of the code, we decided to
-%With the results of the profiling with Vtunes, highlighting the tree based force evaluation and the mesh generation as the most time consuming parts as well as of the oneAPI Offload Advisor, suggesting that the
-%After examining the profiling results and confirming with the developers at the University of Cambridge we decided on looking into restructuring the code and look into porting the tree based force evaluation as well as the Voronoi mesh generation.
-%Since this requires major restructuring of the code it was not possible to port within the scope of this project and is still ongoing.
-
 \subsubsection{Intel oneAPI Math Kernel Library}
 Intel oneAPI Math Kernel Library offers an accelerator enabled version of Fast Fourier Transforms, as well as FFTW3 (and FFTW2) interface wrapper libraries to these functionalities.
-As far as we are aware currently none of the third party libraries, that Arepo depends on has accelerator enabled versions.
+As far as we are aware currently none of the third party libraries, that Arepo depends on, has accelerator enabled versions.
 With the interface wrapper libraries oneMKL can be used as a drop in replacement for FFTW, hence no program source code change is necessary.
-Using oneMKL does not degrade the CPU performance on CSD3 Icelake partition.
+Using oneMKL does not degrade the CPU performance on CSD3's Icelake partition.
 We will test the potential performance benefits on Intel GPUs further.
 
 \subsubsection{Programming Model}
 AREPO is written in C, parallelized with MPI and OpenMP.
-The original intention was to expand the existing OpenMP parallelization to include offload capabilities, in line with the intel recommendation for C programs.
+The original intention was to expand the existing OpenMP parallelization to include offload capabilities, in line with Intel's recommendation for C programs.
 While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
 With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, hence opening the door to consider SYCL as an alternative to OpenMP 5 offload.
 
@@ -92,7 +87,9 @@ With confirmation from the AREPO developers at the University of Cambridge we de
 A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs.
 For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is already in place.
 The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs.
-This is beyond the scope of this project and still ongoing work.
+
+Taking into account the profiling results, that the tree based force evaluation and the mesh generation are the most time consuming parts, as well as the findings from the Offload Advisor, that the current code structure is not suitable for easy code porting, we decided to look into restructuring the code to limit the dependencies of the expensive sections. This is now ongoing work and won't finish in the timeframe of this project. 
+
 
 
 %As a C application that includes already OpenMP parallelization, we intend to follow Intel's recommendation to use OpenMP 5 offloading to target GPUs.
