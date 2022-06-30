@@ -74,7 +74,7 @@ Nsight Compute provides detailed performance metrics at the kernel level and ena
 Nsight Compute reports a 37\% reduction of the compute throughput and a 58\% increase of the kernel's execution time compared to CUDA, while a $\sim10\%$ reduction in overall computational time was reported using either CPU timers (chrono library) or CUDA-specific timers (CUDA event API).
 One issue we came across was that the profiler did not return the kernel's name for the DPC++ code.
 This information was deducted from the launch statistics (gridsize and blocksize) that matched the corresponding values from profiling the native CUDA code.
-The DPC++ ported function (CUDA lernel) is labelled as `const:', instead of the proper kernel's name.
+The DPC++ ported function (CUDA kernel) is labelled as `const:', instead of the proper kernel's name.
 
 
 Similar issues are observed with Nsight Systems.

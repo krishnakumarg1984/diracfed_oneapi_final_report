@@ -15,7 +15,7 @@ A basic feature of these methods is the use of physical frame polynomial bases a
 The implementation of arbitrary order quadrature rules over polytopic domains is non-trivial with the most general and widely used approach being the subdivision of polytopic elements into basic simplicial sub-elements; standard quadrature rules are then employed on each sub-element.
 \texttt{dgpoly3d}~\cite{dong_gpu-accelerated_2021} is a CUDA implementation of the symmetric interior penalty dG method, for the linear system assembly step of second order advection-diffusion-reaction equations.
 
-The code first subdivides each 3D polytopic element into simplicial sub-elements (tetrahedrons) and any co-hyperplanar 2D faces into simplicial sub-faces (triangles), it then precomputes the sparsity pattern of the stiffness and mass matrix and stores it in CSR format and finally populates the matrix with the quadrature values for each simplex of the simplicial subdivision.
+The code first subdivides each 3D polytopic element into simplicial sub-elements (tetrahedrons) and any co-hyperplanar 2D faces into simplicial sub-faces (triangles), it then pre-computes the sparsity pattern of the stiffness and mass matrix and stores it in CSR format and finally populates the matrix with the quadrature values for each simplex of the simplicial subdivision.
 Different kernels are called for each term of the bilinear form, since the workload of each term can be substantially different.
 For example, the kernel that calculates the integral over the elements needs a 3D quadrature rule, compared to the kernel over the interior faces which needs a 2D quadrature rule and thus less integration points.
 For this project we will port to SYCL one of the kernels, the kernel over the elemental integrals.
@@ -65,7 +65,7 @@ and it was included in the kernel call as
 the type was not changed in the \texttt{eval1dLegendre} function.
 After changing the parameter type for the first argument in the function definition from \texttt{float legendre[][3]} to \texttt{dpct::accessor<float, dpct::constant, 2> legendre} the ported code compiled successfully\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/196a795771512bb32e92896cc4e225c429473835}}.
 
-Even though at this stage we were successfull at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g.\ hipSYCL), there was still an obvious change that needed to happen.
+Even though at this stage we were successful at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g.\ hipSYCL), there was still an obvious change that needed to happen.
 The DPC++ Compatibility Tool included the \texttt{dpct.hpp} header file in some of the source files and added in three places code from the \texttt{dpct} namespace.
 Those were in the device selector, in the constant memory accessor and in the atomic add operation.
 
@@ -166,10 +166,10 @@ For the reported benchmarks on Table~\ref{tab:benchmarks} we set the model to \t
 
 \subsubsection{Continuous integration}\label{sec:dgpoly3d_ci}
 We set a CI workflow on GitHub using Actions.
-This workflow uses the Intel oneAPI Basekit docker image from Dockehub, on which we are installing git-lfs to be able to pull the two mesh files from the \texttt{inout} directory.
+This workflow uses the Intel oneAPI Basekit docker image from Dockerhub, on which we are installing git-lfs to be able to pull the two mesh files from the \texttt{inout} directory.
 We then, compile the SYCL code in the \texttt{sycl} directory and run the code piping the output to \texttt{grep}.
 If we get the expected output, the test succeeds otherwise it fails.
-Those mesh sizes are usefull for unit testing but larger mesh sizes are needed for profiling, which the author can provide upon request.
+Those mesh sizes are useful for unit testing but larger mesh sizes are needed for profiling, which the author can provide upon request.
 
 
 \subsubsection{Remarks}\label{sec:dgpoly3d_remarks}

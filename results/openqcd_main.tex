@@ -136,7 +136,7 @@ This is not a very sustainable solution however, and should be moved to, e.g. Gi
 
 It is possible to install prebuilt binaries of both OneAPI and hipSYCL compilers from repositories relatively quickly, which enables us to use CI workflows during the development work.
 CI helps catch errors quickly, and ensure that code merged into the main development branch successfully builds and executes test cases.
-It is standard practice in indurstry and we warmly recommend it for scientific software projects.
+It is standard practice in industry and we warmly recommend it for scientific software projects.
 We chose to use GitHub Actions as the CI platform of our choice, due to good integration with the GitHub source repository and relatively friendly pricing rules, which allow us to run our CI jobs free of charge.
 In GitHub Actions, the user defines a workflow in a \verb #.yaml# file which can consist of any number of arbitrary steps.
 We implemented a simple workflow that runs the main executable on two data sets, using the OneAPI\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/oneapi.yml}} and hipSYCL\footnote{\url{https://github.com/UCL/openqcd-oneapi/blob/e5d53c7e47d8b94f78c87b91ef218d217ce57597/.github/workflows/hipsycl.yml}} compilers, on a CPU-only machine running the latest Ubuntu version available.
@@ -169,7 +169,7 @@ The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUD
 It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
 This requires further study and optimization.\todo{@Tuomas Add what we found. Occupancy vs register pressure seems to be the main indicator}
 
-Changes to workgroup size did not have a significant effect on performance on NVidia A100's.
+Changes to workgroup size did not have a significant effect on performance on NVidia A100s.
 
 \begin{center}
 	\begin{table}
@@ -203,8 +203,8 @@ The planned time allocation was 50~\% of time from both developers, however due 
 The starting point of the project was both developers were proficient c++ programmers, with varying knowledge of C, CUDA, and SYCL, but not familiar at all with the openqcd codebase.
 As a very rough estimate, out of the six months spent on the project, the first two were spent getting familiar with the code, the Intel tools, and the programming languages.
 The first meaningful commits to the repository were made two months after the start of the project\footnote{\url{https://github.com/UCL/openqcd-oneapi/commits/arc_dev}}, with fairly rapid development in the following month.
-We spent a total of approximately 330 hours of development time within the six month period. This includes the development time, but also the time spent going thorugh tutorials, meetings with the team, reading textbooks, planning and design.
-In our experience, with the automatic translation tool \texttt{dpct}, it is quite straightforward to port preexisting CUDA code into a SYCL code that will compile with OneAPI and run successfully on CPU and GPU hardware.
+We spent a total of approximately 330 hours of development time within the six month period. This includes the development time, but also the time spent going through tutorials, meetings with the team, reading textbooks, planning and design.
+In our experience, with the automatic translation tool \texttt{dpct}, it is quite straightforward to port pre-existing CUDA code into a SYCL code that will compile with OneAPI and run successfully on CPU and GPU hardware.
 We estimate that most of the development effort went into making the code portable across different SYCL compilers, setting up the testing infrastructure and analysing the performance.
 
 \end{document}

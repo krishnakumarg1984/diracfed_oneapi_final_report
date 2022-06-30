@@ -26,12 +26,12 @@ Arepo depends on several libraries that are necessary for compilation.
 Arepo also needs a configuration and a parameter file for each example.
 The parameter File contains the run-time options whereas the configuration file specifies compile time settings.
 Special variables in the parameter file need to be modified for each platform, e.g.\ the maximum memory size, which should be around 95\% of the available RAM for every process or a variable that points to the correct data folder for initial condition files and output files.
-Most Arepo branches come with a testsuite of small examples to verify the code.
+Most Arepo branches come with a test suite of small examples to verify the code.
 Furthermore Arepo was used in the Illustris project\footnote{\url{https://www.illustris-project.org/}} and test data~\cite{Nelson_2015} publicly available can be used for longer test runs.
 
 \subsubsection{Profiling with Vtune and Intel Trace Analyzer}
 In contrast to codes described above, where suitable kernels for GPU execution have already been identified in prior porting efforts, this selection process has to be done as an additional first step for this purely CPU-based code.
-Therefore, extensive profiling of the code base has been undertaken using one of the test cases that are also used to verify code correctness to analyze the potential of porting parts of Arepo to GPUs.
+Therefore, extensive profiling of the code base has been undertaken using one of the test cases that are also used to verify code correctness to analyse the potential of porting parts of Arepo to GPUs.
 Hence, a first analysis was carried out using Intel VTune profiler and Intel Trace Analyzer, producing two key insights:
 
 The first insight was that a significant share of the overall run time is spent waiting in a synchronisation step that uses global MPI communication.
@@ -75,15 +75,15 @@ Overall, this suggests that for a successful GPU port of Arepo it will not be su
 %Since this requires major restructuring of the code it was not possible to port within the scope of this project and is still ongoing.
 
 \subsubsection{Intel oneAPI Math Kernel Library}
-Intel onAPI Math Kernel Library offers an accelerator enabled version of Fast Fourier Transforms, as well as FFTW3 (and FFTW2) interface wrapper libraries to these functionalities.
+Intel oneAPI Math Kernel Library offers an accelerator enabled version of Fast Fourier Transforms, as well as FFTW3 (and FFTW2) interface wrapper libraries to these functionalities.
 As far as we are aware currently none of the third party libraries, that Arepo depends on has accelerator enabled versions.
 With the interface wrapper libraries oneMKL can be used as a drop in replacement for FFTW, hence no program source code change is necessary.
-Using oneMKL does not degrade the CPU performance on CSD3 icelake partition.
+Using oneMKL does not degrade the CPU performance on CSD3 Icelake partition.
 We will test the potential performance benefits on Intel GPUs further.
 
 \subsubsection{Programming Model}
 AREPO is written in C, parallelized with MPI and OpenMP.
-The original intention was to expand the existing OpenMP paralllization to include offload capabilities, in line with the intel recommendation for C programs.
+The original intention was to expand the existing OpenMP parallelization to include offload capabilities, in line with the intel recommendation for C programs.
 While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
 With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, hence opening the door to consider SYCL as an alternative to OpenMP 5 offload.
 
