@@ -127,11 +127,11 @@ The only viable way forward seems for the local sysadmin team to install hipSYCL
 
 ComputeCpp\footnote{\url{https://developer.codeplay.com/products/computecpp/ce/home}} is a SYCL implementation from CodePlay software.
 While there are commercial offerings of ComputeCpp from the vendor, there exists a free community edition for the GNU/Linux and Microsoft Windows operating systems.
-The ComputeCpp SDK is available for both the x86-64 and AArch64 architectures, which is encouraging, given the increasingly diverse platforms being embraced by modern HPCs.
+The ComputeCpp SDK is available for both the x86-64 and AArch64 architectures, which is encouraging, given the increasingly diverse platforms being embraced by modern HPCs. % chktex 8
 The free community edition of the software is available from the vendor's developer portal, but requires the creation of a free account and completing an email verification.
-Platform-specific downloads are available compressed tarballs, and may be transferred to the relevant HPC system via standard unix remote file transfer programs such as \texttt{scp},\texttt{sftp} and \texttt{rsync}.
+Platform-specific downloads are available compressed tarballs, and may be transferred to the relevant HPC system via standard Unix remote file transfer programs such as \texttt{scp},\texttt{sftp} and \texttt{rsync}.
 The compiler binaries and other relevant tools shall be located at the root of the uncompressed archive.
-The ComputeCpp framework is ably supported by extensive online browser-based documentation, which addresses a variety of developer needs, and provide tutorials on various facets of Sycl programming for heterogenous systems.
+The ComputeCpp framework is ably supported by extensive online browser-based documentation, which addresses a variety of developer needs, and provide tutorials on various facets of Sycl programming for heterogeneous systems.
 During the course of this project, there were a few releases of the software.
 
 As of June~2022, the ComputeCpp framework complies with the former specification of the SYCL standard \viz~1.2.1, with support for SYCL~2020 marked as experimental.
@@ -184,7 +184,7 @@ The main profiling results are summarised in Table~\ref{tab:openqcd_perf}.
 We have profiled the three main kernels \texttt{mulpauli}, \texttt{doe} and \texttt{deo}.
 The majority of the code is performing multiply and add operations of complex data types stored in nested data structures.
 The original CUDA code clearly outperforms both OneAPI and hipSYCL ports.
-The performace difference varies from roughly a factor 2 in the \texttt{doe} kernel, to a factor 6 in the \texttt{deo} kernel.
+The difference in performance varies from roughly a factor 2 in the \texttt{doe} kernel, to a factor 6 in the \texttt{deo} kernel.
 
 A more detailed look into the profiling data shows that the main performance bottleneck is the memory throughput.
 The CUDA code uses the GPU global memory exclusively, whereas the SYCL ports are moving data in and out of both local and global memory.
@@ -201,16 +201,16 @@ It is worth noting that the two compilers we used generate a different number of
 It seems plausible that there is a deficiency in the current state of the SYCL compilers, rather than the source code itself.
 This could be a good topic for investigation in future projects or hackathons.
 
-%Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
-%We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
-%The difference varies between the kernels we studied, from a factor of 2 to a factor of 6.
-%We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel.
-%NSight Compute suggests the kernels are bottlenecked by memory throughput.
-%A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory.
-%The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code.
-%It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
-%This requires further study and optimization.\todo{@Tuomas Add what we found. Occupancy vs register pressure seems to be the main indicator}
-%Changes to workgroup size did not have a significant effect on performance on NVidia A100s.
+% Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
+% We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
+% The difference varies between the kernels we studied, from a factor of 2 to a factor of 6.
+% We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel.
+% NSight Compute suggests the kernels are bottlenecked by memory throughput.
+% A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory.
+% The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code.
+% It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
+% This requires further study and optimization.
+% \todo{@Tuomas Add what we found.Occupancy vs register pressure seems to be the main indicator} Changes to workgroup size did not have a significant effect on performance on NVidia A100s.
 
 \begin{table}[!htbp]
 	\begin{tabular}{@{}l l S S S S S@{}}
