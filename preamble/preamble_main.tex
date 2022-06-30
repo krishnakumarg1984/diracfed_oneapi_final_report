@@ -113,5 +113,8 @@
 
 %---------- end custom commands ----------%
 
+\let\oldfootnote\footnote
+\renewcommand\footnote[1]{%
+	\oldfootnote{\hspace{0.5mm}#1}}
 
 \setstretch{1.348361657291667}
