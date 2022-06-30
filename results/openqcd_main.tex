@@ -70,10 +70,8 @@ The \verb!dpct::get_current_device()! function returns a handle to the current d
 In the generated code, this handle is then used to get the default queue object using the \verb #default_queue()# method.
 It is not clear why this custom approach has been used by \texttt{dpct}.
 The default queue of the current device can be retrieved by standard \texttt{sycl} calls using
-\begin{verbatim}
-  sycl::queue q_ct1{ sycl::default_selector{} }
-\end{verbatim}
-which is what used to replace the \texttt{dpct} code\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/23}}.
+\verb !sycl::queue q_ct1{ sycl::default_selector{} }!
+which we used to replace the \texttt{dpct} code\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/23}}.
 As an additional benefit, the \texttt{dpct} generated code was retrieving the current device and default queue in each kernel that was allocating or freeing memory on the device, creating unnecessary overhead.
 Using standard \texttt{sycl} namespace calls, we were able to create a queue once in the main function, and pass a reference to it to all kernels.
 
@@ -144,15 +142,43 @@ The ported code relies heavily on the SYCL analogue of their CUDA \texttt{memcpy
 This SYCL source (with USM pointers) could not be successfully compiled by the latest version of the ComputeCpp compiler.
 Until ComputeCpp supports USM access, resolving these compilation errors shall require the SYCL source to be rewritten using the ``buffer-accessor'' memory model, but was not pursued in the interest of time.
 
-% \todo{@Krishna Add (issues with) compiling with ComputeCPP}
-
 \subsubsection{Testing}\label{testing_openqcd}
 
 The repository has a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in under a minute on most GPUs and verifies the results of the DW operator against reference data.
 Perusing the available documentation, we could not re-generate the reference data using the CPU code\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump_memory_guide.txt}}.
 However, we obtained the original reference data and verified the CUDA code.
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/ref-data}.
-In the long-term, the data should be moved to a suitable research data storage service.
+Issues pertinent to the perpetual storage of data files required in code testing is discussed in Section~\ref{sec:gitlfs_rds}.
+
+\subsubsection{Research Data Storage and Git LFS}\label{sec:gitlfs_rds}
+
+The reference data consists of a set of non-text \ie~binary files which consists of filesystem hex dumps of various objects in memory instrumented both before and after the \texttt{dw} function call.
+This necessitates that their storage and retrieval be separate from, yet be seamlessly available with, the rest of the source files in the repository.
+Such binary blobs are not amenable to version control since the classical Unix/git tools such as \texttt{diff} cannot operate on non-text files.
+Furthermore, depending on the specific lattice grid sizes used, the storage requirements of these data files range from a few megabytes to tens of gigabytes on the filesystem.
+
+Owing to its ability to handle large non-text files seamlessly in the same code repository, we chose the Git Large File Storage~(LFS) service\footnote{\url{https://git-lfs.github.com/}} for our data storage needs.
+One attractive proposition of the LFS service is that typical git operations such as fetch and push can also be applied to the data files by using the \texttt{lfs} subcommand.
+When pushed up to the repository, Git~LFS converts such binary files into plain-text files that merely hold pointers to the actual data location held elsewhere, typically within an institution's LFS storage allocation.
+When these data files are fetched from the remote repository onto a local clone on the user's filesystem, the actual files are seamlessly retrieved using the pointer information.
+While in principle, this approach works well, \eg~in the scenario of a solo developer with one local clone of a repository, in practice it is fraught with a myriad of practical difficulties, which we discuss here.
+
+Firstly, the LFS subcommand needs to be available in user's \textsc{PATH}.
+On a remote HPC machine where a standard user does not typically have administrative privileges to install software, the LFS service needs to be made available through the linux modules~(LMod) system.
+While the CSD3 cluster at Cambridge does indeed have a user module for git lfs, this is indeed a practical difficulty on other remote HPCs where it is not always available or easily installable on the user's home directory.
+
+Secondly, for each local clone, Git~Lfs requires the initialisation of user hooks explicitly by issuing an suitable invocation command, ideally prior to the cloning of the remote repository.
+This presents numerous difficulties in a collaborative scenario, wherein some users might not yet have initialised the hooks.
+In this scenario, a fetch operation from upstream shall have silent side effects \eg~indicate the availability of expected file names in the correct paths, but resulting in runtime failures and segmentation faults since these files merely contain pointer information and not the actual binary data.
+This leads to wasted developer time in debugging.
+
+Thirdly, without careful attention to the lfs subcommands and appropriate filter hooks in place (especially when cloning and working from a new filesystem location or machine), there is a strong probability of one of the developers accidentally committing the large binary files to the repository.
+This consumes the quota for data storage allocation of an organisation, and leads to prohibitive times for each standard git operation, thereby adversely affecting development.
+With Github's current design, the only remedy for these problems is to manually migrate to a new repository and thereafter delete the existing repository.
+While commit history can be automatically migrated, it requires tedious manual intervention to migrate bug reports, the Kanban board and project wiki, while closed pull requests and associated notes/discussions are lost forever.
+In view of the aforesaid difficulties which we faced during this project, it is recommended to seek alternatives for long-term data storage needs for the reference data files.
+
+
 % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
 \subsubsection{Continuous Integration}
