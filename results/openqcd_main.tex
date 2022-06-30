@@ -125,6 +125,23 @@ The only viable way forward seems for the local sysadmin team to install hipSYCL
 
 \paragraph{ComputeCPP}
 
+ComputeCpp\footnote{\url{https://developer.codeplay.com/products/computecpp/ce/home}} is a SYCL implementation from CodePlay software.
+While there are commercial offerings of ComputeCpp from the vendor, there exists a free community edition for the GNU/Linux and Microsoft Windows operating systems.
+The ComputeCpp SDK is available for both the x86-64 and AArch64 architectures, which is encouraging, given the increasingly diverse platforms being embraced by modern HPCs.
+The free community edition of the software is available from the vendor's developer portal, but requires the creation of a free account and completing an email verification.
+Platform-specific downloads are available compressed tarballs, and may be transferred to the relevant HPC system via standard unix remote file transfer programs such as \texttt{scp},\texttt{sftp} and \texttt{rsync}.
+The compiler binaries and other relevant tools shall be located at the root of the uncompressed archive.
+The ComputeCpp framework is ably supported by extensive online browser-based documentation, which addresses a variety of developer needs, and provide tutorials on various facets of Sycl programming for heterogenous systems.
+During the course of this project, there were a few releases of the software.
+
+As of June~2022, the ComputeCpp framework complies with the former specification of the SYCL standard \viz~1.2.1, with support for SYCL~2020 marked as experimental.
+In particular, the framework did not yet support the SYCL~2020 feature of Unified Shared Memory~(USM) access, in which a pointer on the host is also a valid pointer on the device.
+The CUDA version of OpenQCD-FASTSUM, \texttt{dw.cuda}, that was used as the starting point for our SYCL port, relied on the paradigm of explicitly copying the input spinor values to GPU devices, performing the kernel computations and copying the result back to the host.
+Following the recommended porting procedure, we used Intel's~\texttt{dpct} tool to obtain the initial SYCL port of the code as discussed in Section~\ref{sec:openqcd_porting}.
+The ported code relies heavily on the SYCL analogue of their CUDA \texttt{memcpy} counterpart, making extensive use of~USM for data access.
+This SYCL source (with USM pointers) could not be successfully compiled by the latest version of the ComputeCpp compiler.
+Until ComputeCpp supports USM access, resolving these compilation errors shall require the SYCL source to be rewritten using the ``buffer-accessor'' memory model, but was not pursued in the interest of time.
+
 % \todo{@Krishna Add (issues with) compiling with ComputeCPP}
 
 \subsubsection{Testing}\label{testing_openqcd}
@@ -133,7 +150,8 @@ The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fast
 We found generating the reference data difficult using the main CPU code based on the available documentation\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
 However, we were able to recover the original reference data and verify the CUDA code.
 The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
-This is not a very sustainable solution however, and should be moved to, e.g.\ GitHub LFS or a similar data storage service. % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
+This is not a very sustainable solution however, and should be moved to, e.g.\ GitHub LFS or a similar data storage service.
+% \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
 \subsubsection{Continuous Integration}
 

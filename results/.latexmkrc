@@ -61,8 +61,7 @@ $clean_ext .=
 '%R.bbl  %R_desc.aux %R-figure*.log %R-figure*.dpth %R-figure*.xml %R-figure*.md5 %R-figure*.aux';
 $ENV{'TZ'} = 'Europe/London';
 
-@default_files          = ('main.tex');
-@default_excluded_files = ( 'preamble/*.tex', 'frontmatter/*.tex' );
+@default_files          = ('*.tex');
 
 # add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
 add_cus_dep( 'acn', 'acr', 0, 'run_makeglossaries' );
