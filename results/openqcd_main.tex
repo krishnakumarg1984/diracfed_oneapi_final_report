@@ -1,3 +1,4 @@
+% vim: conceallevel=0:
 % chktex-file 1
 % chktex-file 44
 % chktex-file 13
@@ -83,7 +84,8 @@ Using standard \texttt{sycl} namespace calls, we were able to create a queue onc
 To compile the code with OneAPI targeting Intel CPUs, we used the \texttt{dpcpp} compiler included in the OneAPI 2022.1 package.
 This worked out of the box using the automatically generated \texttt{Makefile} simply using the \texttt{make} command.
 
-To compile the code with OneAPI targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module  on CSD3 (\verb #/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/# ).
+To compile the code with OneAPI targeting NVidia GPUs we had to use Intel's Open Source \verb #clang++# compiler\footnote{\url{https://github.com/intel/llvm}} installed in a private module on CSD3 (\lstinline[basicstyle=\normalsize\ttfamily,breaklines=true,
+	breakatwhitespace=false,language=sh]!/usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/!).
 
 In addition to the compiler module, we loaded a recent \verb #gcc/11.2.0# module, and initialised the OneAPI environment, as mentioned in Section~\ref{sec:openqcd_porting}.
 In addition to the usual \texttt{Makefile} options, the \verb #-fsycl# and \verb #-fsycl-targets=nvptx64-nvidia-cuda# flags are required to compile SYCL code targeting the NVidia CUDA backend.
