@@ -173,19 +173,30 @@ Changes to workgroup size did not have a significant effect on performance on NV
 
 \begin{center}
 	\begin{table}
-		\begin{tabular}{@{}l l S S S@{}}
+		\begin{tabular}{@{}l l S S S S S@{}}
 			\toprule
-			\thead{Kernel                                    \\ \vphantom{(ms)} } & \thead{Language \\ \vphantom{(ms)}} & {\thead{Duration                 \\ (ms)}} & {\thead{Compute \\ throughput (\%)}} & {\thead{Memory \\ throughput (\%)}} \\
+			\thead{Kernel      \\ \vphantom{(ms)}} & 
+			\thead{Compiler    \\ \vphantom{(ms)}} & 
+			{\thead{Duration   \\ (ms)}} & 
+			{\thead{Compute    \\ throughput (\%)}} & 
+			{\thead{Memory     \\ throughput (\%)}} & 
+			{\thead{Occupancy \\ (\%)}} & 
+			{\thead{Registers \\ per thread}} \\
 			\midrule
-			\texttt{mulpauli} & CUDA & 4.85  & 16.07 & 81.30 \\
-			\texttt{mulpauli} & SYCL & 17.31 & 7.36  & 70.89 \\
-			\texttt{doe}      & CUDA & 7.57  & 15.78 & 62.66 \\
-			\texttt{doe}      & SYCL & 17.34 & 7.31  & 61.12 \\
-			\texttt{deo}      & CUDA & 8.25  & 12.93 & 54.88 \\
-			\texttt{deo}      & SYCL & 46.30 & 7.66  & 27.24 \\
+			\texttt{mulpauli} & CUDA    & 4.85  & 16.05 & 81.28 & 60.09 & 48 \\
+			\texttt{mulpauli} & OneAPI  & 17.21 & 7.39  & 70.98 & 23.30 & 116  \\
+			\texttt{mulpauli} & hipSYCL & 8.12 & 10.34  & 78,51 & 17.60 & 168 \\
+			\midrule
+			\texttt{doe}      & CUDA    & 7.57  & 15.78 & 62.59 & 24.65 & 116 \\
+			\texttt{doe}      & OneAPI  & 17.41 & 7.31  & 61.21 & 18.44 & 168 \\
+			\texttt{doe}      & hipSYCL & 11.14 & 10.57  & 63.54 & 12.28 & 255 \\
+			\midrule
+			\texttt{deo}      & CUDA    & 8.24  & 12.94 & 54.93 & 23.92 & 108 \\
+			\texttt{deo}      & OneAPI  & 46.32 & 7.64  & 27.22 & 18.54 & 142 \\
+			\texttt{deo}      & hipSYCL & 54.90 & 4.80  & 30.96 & 18.60 & 168 \\
 			\bottomrule
 		\end{tabular}
-		\caption{\label{tab:openqcd_perf}Performance comparison of CUDA and SYCL OpenQCD DW kernels.}
+		\caption{\label{tab:openqcd_perf}Performance comparison of CUDA and SYCL OpenQCD DW kernels on NVidia A100.}
 	\end{table}
 \end{center}
 
