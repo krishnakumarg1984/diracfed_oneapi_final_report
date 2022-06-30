@@ -20,8 +20,10 @@ Since the DW operator was identified as the main hotspot in the code and a CUDA 
 
 We performed the porting on CSD3.
 We found it difficult to work on the Intel DevCloud, since it did not have a CUDA library installed and dpct needs to access the CUDA header files.
-Intel can't provide CUDA headers because of copyright issues. However, they do have a tutorial on how to use \texttt{dpct} on the DevCloud\footnote{\url{https://www.intel.com/content/www/us/en/developer/articles/training/intel-dpcpp-compatibility-tool-training.html}}.
-As a short summary, the user has to provide the CUDA header files. The tutorial gives instructions on where to place them.
+Intel cannot provide CUDA headers because of copyright issues.
+However, they do have a tutorial on how to use \texttt{dpct} on the DevCloud\footnote{\url{https://www.intel.com/content/www/us/en/developer/articles/training/intel-dpcpp-compatibility-tool-training.html}}.
+As a short summary, the user has to provide the CUDA header files.
+The tutorial gives instructions on where to place them.
 
 On CSD3 our workflow for dpct was the following:
 
@@ -65,13 +67,18 @@ The header files are distributed with a fairly permissive Apache-2.0 license wit
 Our solution was to include the \verb!dpct::atomic_fetch_add()! function within our source code.
 It is a fairly thin wrapper that calls to the \texttt{sycl} namespace.
 
-The \verb!dpct::get_current_device()! function returns a handle to the current device of type \verb #dpct::device_ext#. In the generated code, this handle is then used to get the default queue object using the \verb #default_queue()# method. It is not clear why this custom approach has been used by \texttt{dpct}. The default queue of the current device can be retrieved by standard \texttt{sycl} calls using
+The \verb!dpct::get_current_device()! function returns a handle to the current device of type \verb #dpct::device_ext#.
+In the generated code, this handle is then used to get the default queue object using the \verb #default_queue()# method.
+It is not clear why this custom approach has been used by \texttt{dpct}.
+The default queue of the current device can be retrieved by standard \texttt{sycl} calls using
 
 \begin{verbatim}
   sycl::queue q_ct1{ sycl::default_selector{} }
 \end{verbatim}
 
-which is what used to replace the \texttt{dpct} code\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/23}}. As an additional benefit, the \texttt{dpct} generated code was retrieving the current device and default queue in each kernel that was allocating or freeing memory on the device, creating unnecessary overhead. Using standard \texttt{sycl} namespace calls, we were able to create a queue once in the main function, and pass a reference to it to all kernels.
+which is what used to replace the \texttt{dpct} code\footnote{\url{https://github.com/UCL/openqcd-oneapi/pull/23}}.
+As an additional benefit, the \texttt{dpct} generated code was retrieving the current device and default queue in each kernel that was allocating or freeing memory on the device, creating unnecessary overhead.
+Using standard \texttt{sycl} namespace calls, we were able to create a queue once in the main function, and pass a reference to it to all kernels.
 
 \subsubsection{Compiling}\label{sec:openqcd_compiling}
 
@@ -109,7 +116,8 @@ We had to add \verb !using namespace cl;! to the dpcpp source file, this did not
 To target Intel CPUs we added the \verb !--hipsycl-targets=omp! compiler flag, and to target NVidia A100 GPUs we added the \verb !--hipsycl-targets=cuda:sm_80! compiler flag.
 Alternatively, one can modify the \verb !HIPSYCL_TARGETS! and \verb !HIPSYCL_GPU_ARCH! environment variables.
 
-As further mentioned in section~\ref{sec:software_stack} it would be possible to install hipSYCL on Cosma8 to run on AMD GPUs. We made an effort to install it using the spack package manager.
+As further mentioned in section~\ref{sec:software_stack} it would be possible to install hipSYCL on Cosma8 to run on AMD GPUs.
+We made an effort to install it using the spack package manager.
 Installing Spack is fairly straightforward, all that is required is cloning the GitHub repository\footnote{\url{https://github.com/spack/spack}} and ensuring python is installed.
 This can be done in the user's home directory on a HPC system.
 To be used effectively, spack requires an environment that points to system packages that should not be reinstalled by the user.
@@ -119,7 +127,8 @@ Once the environment is set up, we can install hipsycl with the system-provided 
 spack install hipsycl ^boost@1.67.0 %gcc@10.2.0
 \end{verbatim}
 The installed hipSYCL was successful in compiling for the CPU backend on Cosma8.
-However, we discovered that the spack recipe did not support the ROCm backend\footnote{\url{https://github.com/UCL/openqcd-oneapi/issues/29}}, which is necessary in order to compile for AMD GPUs. The only viable way forward seems for the local sysadmin team to install hipSYCL from source.
+However, we discovered that the spack recipe did not support the ROCm backend\footnote{\url{https://github.com/UCL/openqcd-oneapi/issues/29}}, which is necessary in order to compile for AMD GPUs.
+The only viable way forward seems for the local sysadmin team to install hipSYCL from source.
 
 \paragraph{ComputeCPP}
 
