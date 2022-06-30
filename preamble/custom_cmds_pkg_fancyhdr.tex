@@ -13,3 +13,7 @@
 % \fancyfoot[LE,RO]{\thepage}
 \fancyhead[L]{\footnotesize \PageHeaderLeft}
 \fancyhead[R]{\footnotesize \PageHeaderRight}
+\renewcommand{\headrulewidth}{0.05pt}%
+\renewcommand{\headrule}{\hbox to\headwidth{%
+		\color{black!20!white}\leaders\hrule height \headrulewidth\hfill}}
+\pagestyle{fancy}
