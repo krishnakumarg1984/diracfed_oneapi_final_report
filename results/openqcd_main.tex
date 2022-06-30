@@ -148,11 +148,11 @@ Until ComputeCpp supports USM access, resolving these compilation errors shall r
 
 \subsubsection{Testing}\label{testing_openqcd}
 
-The repository contains a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in less than a minute on most GPUs and verifies the results of the DW operator against reference data.
-We found generating the reference data difficult using the main CPU code based on the available documentation\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump\_memory\_guide.txt}}.
-However, we were able to recover the original reference data and verify the CUDA code.
-The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/makis-ref-data}.
-This is not a very sustainable solution however, and should be moved to, e.g.\ GitHub LFS or a similar data storage service.
+The repository has a stand-alone test\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/tree/feature/cuda_tests/tests/cuda}} for the CUDA port that runs in under a minute on most GPUs and verifies the results of the DW operator against reference data.
+Perusing the available documentation, we could not re-generate the reference data using the CPU code\footnote{\url{https://gitlab.com/fastsum/openqcd-fastsum/-/blob/feature/cuda_tests/tests/cuda/Dump_memory_guide.txt}}.
+However, we obtained the original reference data and verified the CUDA code.
+The files are temporarily stored in the project directory on CSD3 \texttt{/rds/project/dirac\_vol2/rds-dirac-dr004/openqcd/ref-data}.
+In the long-term, the data should be moved to a suitable research data storage service.
 % \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
 
 \subsubsection{Continuous Integration}

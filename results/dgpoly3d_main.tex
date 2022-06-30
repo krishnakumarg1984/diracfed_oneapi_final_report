@@ -8,9 +8,9 @@
 
 \subsection{dGpoly3D}\label{sec:dgpoly3d}
 
-Discontinuous Galerkin (dG) methods on meshes consisting of polytopic elements have received considerable attention in recent years.
+Discontinuous Galerkin (dG) methods on meshes with polytopic elements have received considerable attention in recent years.
 By combining advantages from both finite element methods (FEMs) and finite volume methods (FVMs) they allow the simple treatment of complicated computational geometries, ease of adaptivity and stability for non-self-adjoint PDE problems.
-It has also been shown that they are applicable on extremely general meshes, consisting of general polytopic elements with an arbitrary number of faces and different local elemental polynomial degrees.
+They can also be applied to extremely general meshes, consisting of general polytopic elements with an arbitrary number of faces and different local elemental polynomial degrees.
 A basic feature of these methods is the use of physical frame polynomial bases and this, together with the highly involved quadrature requirements over polytopic elements, pose new algorithmic challenges in the context of matrix assembly.
 The implementation of arbitrary order quadrature rules over polytopic domains is non-trivial with the most general and widely used approach being the subdivision of polytopic elements into basic simplicial sub-elements; standard quadrature rules are then employed on each sub-element.
 \texttt{dgpoly3d}~\cite{dong_gpu-accelerated_2021} is a CUDA implementation of the symmetric interior penalty dG method, for the linear system assembly step of second order advection-diffusion-reaction equations.
@@ -37,7 +37,7 @@ For the following comparisons we've set the relative tolerance to $1\%$ and the 
 
 \subsubsection{Porting the code}\label{sec:dgpoly3d_porting}
 We ported the code using Intel's DPC++ Compatibility Tool (\texttt{dpct}).
-Porting completed without errors and the compatibility tool added inline comments to explain some of its decisions or even propose changes (for example in one place where we update with atomic operations an array residing in global memory, it proposed a change in case the array is in local memory instead).
+Porting completed without errors and the compatibility tool added inline comments to explain some of its decisions or even propose changes (\eg{} in one place where we update with atomic operations an array residing in global memory, it proposed a change in case the array is in local memory instead).
 The \texttt{cudaMalloc} and \texttt{cudaMemcpy} operations were converted to explicit Unified Shared Memory allocations via \texttt{sycl::malloc\_device}.
 We also automatically created a \texttt{Makefile} with the \texttt{--gen-build-script} flag\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/58ea1f6ad2f72386e2561feb8cb18caf602462cd}}.
 However, compiling failed with the following error message:
@@ -62,25 +62,25 @@ and it was included in the kernel call as
 \begin{verbatim}
   dpct::accessor<float, dpct::constant, 2> legendre
 \end{verbatim}
-the type was not changed in the \texttt{eval1dLegendre} function.
-After changing the parameter type for the first argument in the function definition from \texttt{float legendre[][3]} to \texttt{dpct::accessor<float, dpct::constant, 2> legendre} the ported code compiled successfully\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/196a795771512bb32e92896cc4e225c429473835}}.
+the type was unchanged in the \texttt{eval1dLegendre} function.
+After updating the first parameter's type in the function definition  from \mbox{\texttt{\small float legendre[][3]}} to \mbox{\texttt{\small dpct::accessor<float, dpct::constant, 2> legendre}} the code compiled successfully\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/196a795771512bb32e92896cc4e225c429473835}}.
 
-Even though at this stage we were successful at compiling the code, if we wanted to create a generic SYCL code that could compile with various compilers (e.g.\ hipSYCL), there was still an obvious change that needed to happen.
+Although at this stage we had successfully compiled the code, if we sought a generic SYCL code that could compile with various compilers (e.g.\ hipSYCL), there was still an obvious change that needed to happen.
 The DPC++ Compatibility Tool included the \texttt{dpct.hpp} header file in some of the source files and added in three places code from the \texttt{dpct} namespace.
 Those were in the device selector, in the constant memory accessor and in the atomic add operation.
 
 The first was trivial to modify\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/3219aa05f4a95bc719fa1e7aae141fbda3a03bf2}} and we only changed the
-\begin{verbatim}
+\begin{lstlisting}[language=C++]
 dpct::device_ext &dev_ct1 = dpct::get_current_device();
 sycl::queue &q_ct1 = dev_ct1.default_queue();
-\end{verbatim}
+\end{lstlisting}
 to
-\begin{verbatim}
+\begin{lstlisting}[language=C++]
 sycl::queue q_ct1{ sycl::default_selector{} };
-\end{verbatim}
+\end{lstlisting}
 
 For the constant memory instead of using \texttt{dpct::constant\_memory} and \texttt{dpct::accessor}, there was various valid solutions but we decided to use standard SYCL buffers and accessors in read mode and with the constant buffer target\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/c12cd57df6f8c19b21601da750a2c612dc58d616}}.
-\begin{verbatim}
+\begin{lstlisting}[language=C++]
 sycl::buffer<Real, 2> array_buf(array.data(),
     sycl::range<2>{col_size, col_size});
 
@@ -89,10 +89,11 @@ auto array_acc_ct1 = array_buf.get_access<sycl::access::mode::read,
 
 sycl::accessor<Real, 2, sycl::access::mode::read,
     sycl::access::target::constant_buffer> array
-\end{verbatim}
+\end{lstlisting}
 
-Finally, for the atomic add operation, we tried originally to change the \texttt{dpct::atomic\_fetch\_add} to \texttt{sycl::atomic\_fetch\_add} but Intel oneAPI 2022.1 was giving the error \texttt{SYCL atomic function not available for float type}.
-Instead, we decided to use the same solution that our colleagues working with the OpenQCD code found, i.e.\ to copy the float implementation of the \texttt{atomic\_fetch\_add} from the \texttt{atomic.hpp} header file provided with the Compatibility Tool\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/7820fd8a891a0b682876c425d5d8919182040770}}.
+Finally, for the atomic add operation, we tried originally to change the \lstinline[basicstyle=\normalsize\ttfamily,breaklines=true,
+	breakatwhitespace=false,language=sh]{dpct::atomic_fetch_add} to \texttt{sycl::atomic\_fetch\_add} but Intel oneAPI 2022.1 was giving the error \texttt{SYCL atomic function not available for float type}.
+Instead, we decided to use the same solution that our colleagues working with the OpenQCD code found, i.e.\ to copy the float implementation of the \texttt{atomic\_fetch\_add} from the \texttt{atomic.hpp} header file provided with the compatibility tool\footnote{\url{https://github.com/UniOfLeicester/dgpoly3d-dfed/commit/7820fd8a891a0b682876c425d5d8919182040770}}.
 
 With the \texttt{dpct} namespace removed, an attempt to compile the code with hipSYCL failed due to the \texttt{SYCL\_EXTERNAL} macro.
 \texttt{SYCL\_EXTERNAL} is, according to the SYCL specification published by the Khronos Group, ``an optional macro that enables external linkage of SYCL functions and methods to be included in an SYCL kernel'' which hipSYCL doesn't support yet.

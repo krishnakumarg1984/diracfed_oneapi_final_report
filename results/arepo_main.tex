@@ -17,7 +17,7 @@ To the best of our knowledge, there is currently no version of this code that ca
 
 \subsubsection{Running the code}
 Arepo depends on several libraries that are necessary for compilation.
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 	\item{\textbf{GSL\footnote{\url{https://www.gnu.org/software/gsl}}:}} GNU Scientific Library as a random number generator and for numerical integration.
 	\item{\textbf{GMP\footnote{\url{https://gmplib.org/}}:}} GNU Multiple Precision Arithmetic Library to calculate exact geometric predictions
 	\item{\textbf{FFTW3\footnote{\url{http://www.fftw.org/}}:}} Fastest Fourier Transform in the West is used in the particle-mesh algorithm
@@ -59,9 +59,9 @@ As expected, the synchronisation overhead is negligible for smaller numbers of t
 \end{figure}
 
 Second profiling outcome and original motivation for this analysis was to understand the distribution of run time across the different parts of a time step and subsequently to identify suitable candidates for GPU porting.
-The two most time-consuming parts proved to be the evaluation of gravitational forces with a Tree particle Mesh algorithm, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between.
+The two most time-consuming parts were the evaluation of gravitational forces with a Tree particle Mesh algorithm, which is carried out in two half steps at the beginning and end of a time step, and the creation of the Voronoi mesh in-between.
 
-\subsubsection{oneAPI Offload Advisor}
+\subsubsection{OneAPI Offload Advisor}
 The next step in the analysis was to use Intel's Offload Advisor to see if the previously identified time consuming parts contain any kernels that would readily benefit from GPU offloading.
 However, with the current structure of the underlying algorithm the Offload Advisor judged every routine to suffer from too much overhead when ported to GPU.
 Only relatively short loops within sub steps of the mesh creation routines were classified as offload candidates that could potentially see a minimal speed-up.
@@ -80,11 +80,11 @@ We will test the potential performance benefits on Intel GPUs further.
 AREPO is written in C, parallelized with MPI and OpenMP.
 The original intention was to expand the existing OpenMP parallelization to include offload capabilities, in line with Intel's recommendation for C programs.
 While investigating the performance of the OpenMP shared memory parallelization of AREPO, functional problems affecting the correctness of results were identified.
-With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, hence opening the door to consider SYCL as an alternative to OpenMP 5 offload.
+With confirmation from the AREPO developers at the University of Cambridge we decided that at this stage it was not worth the effort to debug and fix the existing shared memory parallelization, hence opening the door to consider SYCL as an alternative to OpenMP~5 offload.
 
 
 \subsubsection{Summary}
-A prerequisite for any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs.
+A prerequisite to any successful porting effort is a suitable control flow structure that exposes sufficient parallelism to map to the computational capabilities of GPUs.
 For many codes that have been equipped with accelerator capabilities in the past, independent from the programming model, this code structure is already in place.
 The extensive analysis work performed on AREPO suggests that this is not yet the case here and significant effort has to be invested into transforming the code first before meaningful gains can be expected from porting to GPUs.
 

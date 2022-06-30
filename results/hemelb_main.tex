@@ -11,14 +11,14 @@
 Computational fluid dynamics represents a significant use case for high performance computing in many fields of engineering and science.
 Of the many techniques available in this field, the lattice Boltzmann method (LBM) has gained traction in the community for its ability to be both simply deployed for parallel computation and its facility to handle complex geometric and moving boundary conditions.
 The HemeLB code\footnote{\url{https://github.com/hemelb-codes}} uses the LBM to study 3D blood flow in human-scale vascular domains and has been optimised to handle the sparse geometries characteristic of these problems.
-In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG~\cite{mccullough2021towards} whilst a GPU port of the code has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
+In previous work, the CPU version of the code has been shown to display strong scaling to over 300,000 cores on SuperMUC-NG~\cite{mccullough2021towards} whilst a GPU port has displayed similar characteristics to over 18,000 NVIDIA V100 GPUs on Summit~\cite{zacharoudiou_development_2022}.
 
 The current GPU ports of HemeLB have been developed using the CUDA framework.
 Whilst this has been suitable for the current generations of HPC infrastructure, the imminent arrival of alternative accelerator hardware has necessitated the implementation of more platform-agnostic coding structures.
-This effort porting to the OneAPI platform will be instructive as to the level of complexity of such a migration for a mature, detailed and highly performant application.
+This porting effort to SYCL will be instructive as to the level of complexity of such a migration for a mature, detailed and highly performant application.
 
 The OneAPI platform advocates the use of its DPCT conversion tool to convert the majority of an existing CUDA code to the DPC++ framework.
-From a practical standpoint, it can be noted that the DevCloud environment that is offered for DPC++ development does not appear to natively contain the CUDA header files necessary for the conversion of an existing CUDA code with DPCT to take place.
+From a practical standpoint, it can be noted that the DevCloud environment offered for DPC++ development does not natively contain the CUDA header files necessary for the conversion of an existing CUDA code with DPCT to take place.
 As such, conversion needs to be done locally or on a cluster that contains both CUDA and OneAPI software.
 Additionally, the majority of resources on the use of DPCT focus on simple, single file, examples of CUDA code.
 In reality, porting a mature code will require the conversion and correction of several files to ensure a fully operational application is able to be compiled.
@@ -32,17 +32,17 @@ This, highly simplified, script was converted to DPC++ with DPCT.
 On our first attempt, the conversion yielded one error that needed to be corrected by hand.
 Here it failed to convert a declaration of a constant memory array despite successfully converting several around the same location:
 
-\begin{lstlisting}[language=C++,basicstyle=\small]
-dpct::constant_memory<int, 1> _InvDirections_19(19); <--- Converted successfully
-//__constant__ double _EQMWEIGHTS_19[19]; <--- Remained after DPCT conversion
-dpct::constant_memory<double, 1> _EQMWEIGHTS_19(19); <--- Manually added
-dpct::constant_memory<int, 1> _CX_19(19); <--- Converted successfully
+\begin{lstlisting}[language=C++,basicstyle=\footnotesize\ttfamily]
+dpct::constant_memory<int, 1> _InvDirections_19(19); // <-- Converted successfully
+__constant__ double _EQMWEIGHTS_19[19]; // <-- Remained after DPCT conversion
+dpct::constant_memory<double, 1> _EQMWEIGHTS_19(19); // <-- Manually added
+dpct::constant_memory<int, 1> _CX_19(19); // <-- Converted successfully
 \end{lstlisting}
 
 For a updated version of the script, this error no longer occurred.
 
 \subsubsection{Performance Analysis --- Profiling}\label{sec:hemelb_performance}
-Following the conversion, we compared the performance of the native CUDA code and the converted code on the NVIDIA A100 GPUs available on the CSD3 cluster.
+We compared the performance of the native CUDA code and the converted code on the NVIDIA A100 GPUs available on the CSD3 cluster.
 We also compared this to the Intel GPUs available on the Intel DevCloud environment.
 This hardware however should not be regarded as comparable to the A100 cards and these results demonstrate the capacity for cross-platform deployment.
 For this test we ran the kernel for the equivalent of 5000 iterations of a 100,000 site domain.
@@ -60,21 +60,21 @@ This was repeated 10 times to obtain a fair estimate of the runtime.
 	\end{tabular}
 \end{table}
 
-For this initial test case, it can be seen that on the common hardware tested here the conversion to the DPC++ framework and clang compiler has resulted in a 10\% drop in performance compared to the native CUDA code and NVIDIA compiler.
+For this initial test case, it can be seen that on the common hardware tested here the conversion to the DPC++ framework and clang compiler has resulted in a \qty{10}{\percent} in performance compared to the native CUDA code and NVIDIA compiler.
 
 \begin{figure}[htp]
 	\centering
 	\includegraphics[clip,width=\textwidth]{Nsight_Compute_CUDA_vs_DPC++_A100_GPU.png}
-	\caption{Profiling the CUDA and ported DPC++ code using NVIDIA's Nsight Compute on A100 GPU.}
+	\caption{Profiling the CUDA and ported Sycl code using Nvidia Nsight Compute on A100 GPU.}
 	\label{fig:ncu_CUDA_Vs_DPC++_A100GPU}
 \end{figure}
 
-Profiling both versions of the code (CUDA, DPC++) was carried out using NVIDIA's performance analysis tools, Nsight Compute (see fig.~\ref{fig:ncu_CUDA_Vs_DPC++_A100GPU}) and Nsight Systems (see fig.~\ref{fig:nsys_DPC++_A100GPU}).
-Nsight Compute provides detailed performance metrics at the kernel level and enables comparison of both versions, although we are not certain about the reliability of the results reported for the DPC++ code.
-Nsight Compute reports a 37\% reduction of the compute throughput and a 58\% increase of the kernel's execution time compared to CUDA, while a $\sim10\%$ reduction in overall computational time was reported using either CPU timers (chrono library) or CUDA-specific timers (CUDA event API).
-One issue we came across was that the profiler did not return the kernel's name for the DPC++ code.
+Profiling both versions of the code (CUDA, DPC++) was carried out using Nvidia's performance analysis tools, Nsight Compute (see fig.~\ref{fig:ncu_CUDA_Vs_DPC++_A100GPU}) and Nsight Systems (see fig.~\ref{fig:nsys_DPC++_A100GPU}).
+Nsight Compute provides detailed performance metrics at the kernel level and enables comparison of both versions, although we are not certain about the reliability of the results reported for the Sycl code.
+Nsight Compute reports a 37\% reduction of the compute throughput and a 58\% increase of the kernel's execution time compared to CUDA, while a $\qty{\approx10}{\percent}$ reduction in overall computational time was reported using either CPU timers (chrono library) or CUDA-specific timers (event API).
+One practical issue was that the profiler did not return the kernel's name for the DPC++ code.
 This information was deducted from the launch statistics (gridsize and blocksize) that matched the corresponding values from profiling the native CUDA code.
-The DPC++ ported function (CUDA kernel) is labelled as `const:', instead of the proper kernel's name.
+The DPC++ ported function (CUDA kernel) is labelled as \texttt{const:}, instead of the full kernel name.
 
 
 Similar issues are observed with Nsight Systems.
@@ -104,40 +104,37 @@ Whilst HemeLB compilation is generally straightforward, the ease of migration to
 Our workflow on CSD3 was the following:
 \begin{enumerate}
 	\item Set up modules and the OneAPI environment
-	      \begin{verbatim}
+	      \begin{lstlisting}[language=bash,basicstyle=\scriptsize\ttfamily]
 module purge
 module use /usr/local/software/spack/spack-modules/dpcpp-cuda-20220220/linux-centos8-x86_64_v3/
 module load dpcpp
 source /usr/local/software/intel/oneapi/2022.1/setvars.sh --force
-module load rhel8/slurm dot cmake singularity/current rhel8/global cuda/11.4 /
-rhel8/default-amp libtirpc/1.2.6/gcc-9.4.0-duam2pr gcc/9.4.0/gcc-11.2.0-72sgv5z python/3.8.11/gcc-9.4.0-yb6rzr6
-    \end{verbatim}
+module load rhel8/slurm dot cmake singularity/current rhel8/global cuda/11.4
+module load rhel8/default-amp libtirpc/1.2.6/gcc-9.4.0-duam2pr
+module load gcc/9.4.0/gcc-11.2.0-72sgv5z python/3.8.11/gcc-9.4.0-yb6rzr6
+    \end{lstlisting}
 	\item Run DPCT to migrate the full HemeLB\_GPU CUDA code
 	\item Compile the DPC++ code
 \end{enumerate}
 
 
 The source files, which specifically contain CUDA code and need to be ported to DPC++ are the following:
-\begin{verbatim}
-    src
-    |- cuda kernels def decl
-    ||- GPU Collide Stream Iolets.cu
-    ||- GPU Collide Stream wall sBB Iolets.cu
-    ||- cuda params.cu
-    |
-    |- lb
-    ||- lb.hpp
-    |
-    |- net
-    ||- BaseNet.cc
-    |
-    |- Geometry
-    ||- LatticeData.cc
-    |
-    |- main.cu
-    |
-    |- Simulation Master.cu
-\end{verbatim}
+
+\dirtree{%
+	.1 src.
+	.2 cuda kernels def decl.
+	.3 GPU Collide Stream Iolets.cu.
+	.3 GPU Collide Stream wall sBB Iolets.cu.
+	.3 cuda params.cu.
+	.2 lb.
+	.3 lb.hpp.
+	.2 net.
+	.3 BaseNet.cc.
+	.2 Geometry.
+	.3 LatticeData.cc.
+	.2 main.cu.
+	.3 Simulation Master.cu.
+}
 
 In principle, there are two approaches for migrating CUDA codes to DPC++.
 The first one involves a file-to-file manual migration, which is a good choice for migrating a few files.
@@ -154,54 +151,57 @@ The compilation database (compile\_commands.json file), containing the commands 
 
 The procedure for porting the full HemeLB code is therefore the following:
 \begin{enumerate}
-	\item Create build directory, e.g. ``src/build''
-	\item Within ``src/build'' run ``cmake ..'' % chktex 26
-	\item Run ``intercept-build make''. This generates the compilation database (compile\_commands.json)
-	\item Navigate one level up (src/).
+	\item Create build directory, e.g. \texttt{src/build}
+	\item Within \texttt{src/build} run \texttt{cmake ..} % chktex 26
+	\item Run \texttt{intercept-build make}. This generates the compilation database (\texttt{compile\_commands.json})
+	\item Navigate one level up (\text{src/}).
 	\item Run
 	      \begin{verbatim}
     dpct -p build/compile_commands.json --in-root=. \
         --out-root=../src_dpct_output --keep-original-code \
         --process-all
     \end{verbatim}
-	\item Manually verify and edit the migrated code (in src\_dpct\_output/).
+	\item Manually verify and edit the migrated code (in \texttt{src\_dpct\_output/}).
 \end{enumerate}
 
 During the migration stage the majority of the warnings received involved CUDA error checking functionalities added in HemeLB\_GPU.
 All CUDA runtime API calls return an error code (cudaError\_t is an enum type), while DPC++ uses exceptions to handle errors.
 Hence, the tool added messages in the comments to indicate additional manual edits are likely necessary.
 For example, warnings were issued for the following in the CUDA code:
-\begin{verbatim}
-    cudaError_t error = cudaGetLastError();
-    cudaError_t cudaStatus;
-    cudaStatus = cudaMemcpy(dens_GPU, &(((distribn_t*)GPUDataAddr_dbl_MacroVars)[0]), MemSz, cudaMemcpyDeviceToHost);
-    cudaStatus = cudaMalloc((void**)&GPUDataAddr_dbl_MacroVars, TotalMem_dbl_MacroVars);
-\end{verbatim}
+\begin{lstlisting}[language=C++,basicstyle=\ttfamily\footnotesize]
+cudaError_t error = cudaGetLastError();
+cudaError_t cudaStatus;
+cudaStatus=cudaMemcpy(dens_GPU,&(((distribn_t*)GPUDataAddr_dbl_MacroVars)[0]),MemSz,cudaMemcpyDeviceToHost);
+cudaStatus=cudaMalloc((void**)&GPUDataAddr_dbl_MacroVars,TotalMem_dbl_MacroVars);
+\end{lstlisting}
 
 Warnings were also raised concerning the workgroup size passed to the SYCL ported kernel.
 For example:
-\begin{verbatim}
-    warning: DPCT1049:249: The workgroup size passed to the SYCL kernel
-    may exceed the limit. To get the device limit,
-    query info::device::max_work_group_size.
-    Adjust the workgroup size if needed.
+\begin{footnotesize}
+	\begin{verbatim}
+warning: DPCT1049:249: The workgroup size passed to the SYCL kernel may exceed the limit.
+To get the device limit, query info::device::max_work_group_size.
+Adjust the workgroup size if needed.
 \end{verbatim}
+\end{footnotesize}
 
 Finally, warnings were also issued for parameters declared in the CUDA code as ``extern''
-\begin{verbatim}
-    warning: DPCT1057:0: Variable _Iolets_Inlet_Edge was used in host code and
-    device code. The Intel(R) DPC++ Compatibility Tool updated _Iolets_Inlet_Edge
-    type to be used in SYCL device code and generated
-    new _Iolets_Inlet_Edge_host_ct1 to be used in host code. You need to update
-    the host code manually to use the new _Iolets_Inlet_Edge_host_ct1.
+\begin{footnotesize}
+	\begin{verbatim}
+warning: DPCT1057:0: Variable _Iolets_Inlet_Edge was used in host code and device code.
+The Intel(R) DPC++ Compatibility Tool updated _Iolets_Inlet_Edge type to be used in
+SYCL device code and generated new _Iolets_Inlet_Edge_host_ct1 to be used in host code.
+You need to update the host code manually to use the new _Iolets_Inlet_Edge_host_ct1.
 \end{verbatim}
+\end{footnotesize}
 
 \subsubsection{Compiling}
 We used Intel’s clang++ compiler and passed the flags ``-fsycl'' and ``-fsycl-targets=nvptx64-nvidia-cuda'' to compile SYCL code targeting the NVidia CUDA backend.
 One problem detected was that the CMakeLists.txt file was not adjusted accordingly after running the  compatibility tool.
 The migrated source files (extension changed to *.dp.cpp) were not updated (in set root\_sources).
 In our case this involved the following files:
-\begin{verbatim}
+\begin{footnotesize}
+	\begin{verbatim}
 ./main.dp.cpp
 ./SimulationMaster.dp.cpp
 ./geometry/GeometryReader.cc.dp.cpp
@@ -217,18 +217,21 @@ In our case this involved the following files:
 ./lb/iolets/InOutLetWomersleyVelocity.cc.dp.cpp
 ./lb/iolets/InOutLetCosine.cc.dp.cpp
 \end{verbatim}
+\end{footnotesize}
 
 We had to manually modify the following files
-\begin{verbatim}
-    ./extraction/CMakeLists.txt
-    ./geometry/CMakeLists.txt
-    ./lb/CMakeLists.txt
-    ./net/CMakeLists.txt
-    ./colloids/CMakeLists.txt
+\begin{footnotesize}
+	\begin{verbatim}
+./extraction/CMakeLists.txt
+./geometry/CMakeLists.txt
+./lb/CMakeLists.txt
+./net/CMakeLists.txt
+./colloids/CMakeLists.txt
 \end{verbatim}
+\end{footnotesize}
 and modify the CMAKE\_CXX\_FLAGS in the CMakeLists.txt file
 \begin{verbatim}
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl \    
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl \
             -fsycl-targets=nvptx64-nvidia-cuda")
 \end{verbatim}
 
@@ -238,9 +241,9 @@ warning: DPCPP does not support C++ version earlier than C++17.
 Some features might not be available.
 \end{verbatim}
 
-Further compiling problems related to allocating memory inside the GPU kernels, which highlights the inherent differences between CUDA and SYCL    
+Further compiling problems related to allocating memory inside the GPU kernels, which highlights the inherent differences between CUDA and SYCL
 \begin{verbatim}
-    error: SYCL kernel cannot allocate storage 
+    error: SYCL kernel cannot allocate storage
         site_t *Iolet_info = new site_t[3*num_local_Iolets];
 \end{verbatim}
 
