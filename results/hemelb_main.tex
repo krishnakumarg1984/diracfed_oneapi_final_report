@@ -228,7 +228,8 @@ We had to manually modify the following files
 \end{verbatim}
 and modify the CMAKE\_CXX\_FLAGS in the CMakeLists.txt file
 \begin{verbatim}
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl -fsycl-targets=nvptx64-nvidia-cuda")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsycl \    
+            -fsycl-targets=nvptx64-nvidia-cuda")
 \end{verbatim}
 
 We had to adjust the C++ standard to at least 17
@@ -237,11 +238,16 @@ warning: DPCPP does not support C++ version earlier than C++17.
 Some features might not be available.
 \end{verbatim}
 
-Further compiling problems related to the pow function
+Further compiling problems related to allocating memory inside the GPU kernels, which highlights the inherent differences between CUDA and SYCL    
+\begin{verbatim}
+    error: SYCL kernel cannot allocate storage 
+        site_t *Iolet_info = new site_t[3*num_local_Iolets];
+\end{verbatim}
+
 
 \subsubsection{General Comments}
 In the first part of this effort, we extracted the key collision kernel of HemeLB into a single script and converted this to DPC++ using the  DPCT conversion tools.
-For a code of this level of complexity, The porting and code correction exercise was straightforward even for a developer with limited SYCL experience.
+For a code of this level of complexity, the porting and code correction exercise was straightforward even for a developer with limited SYCL experience.
 
 For porting a more complex code such as the CUDA port of HemeLB\_GPU, much more time is needed to understand and complete the conversion process.
 As described above, further steps are needed to correctly capture and convert files within a compilation process orchestrated by CMake.
