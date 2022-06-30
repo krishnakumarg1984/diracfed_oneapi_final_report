@@ -1,6 +1,7 @@
 % chktex-file 1
 % chktex-file 44
 % chktex-file 13
+% chktex-file 31
 
 \documentclass[../main]{subfiles}
 
@@ -171,34 +172,32 @@ This requires further study and optimization.\todo{@Tuomas Add what we found. Oc
 
 Changes to workgroup size did not have a significant effect on performance on NVidia A100s.
 
-\begin{center}
-	\begin{table}
-		\begin{tabular}{@{}l l S S S S S@{}}
-			\toprule
-			\thead{Kernel      \\ \vphantom{(ms)}} & 
-			\thead{Compiler    \\ \vphantom{(ms)}} & 
-			{\thead{Duration   \\ (ms)}} & 
-			{\thead{Compute    \\ throughput (\%)}} & 
-			{\thead{Memory     \\ throughput (\%)}} & 
-			{\thead{Occupancy \\ (\%)}} & 
-			{\thead{Registers \\ per thread}} \\
-			\midrule
-			\texttt{mulpauli} & CUDA    & 4.85  & 16.05 & 81.28 & 60.09 & 48 \\
-			\texttt{mulpauli} & OneAPI  & 17.21 & 7.39  & 70.98 & 23.30 & 116  \\
-			\texttt{mulpauli} & hipSYCL & 8.12 & 10.34  & 78,51 & 17.60 & 168 \\
-			\midrule
-			\texttt{doe}      & CUDA    & 7.57  & 15.78 & 62.59 & 24.65 & 116 \\
-			\texttt{doe}      & OneAPI  & 17.41 & 7.31  & 61.21 & 18.44 & 168 \\
-			\texttt{doe}      & hipSYCL & 11.14 & 10.57  & 63.54 & 12.28 & 255 \\
-			\midrule
-			\texttt{deo}      & CUDA    & 8.24  & 12.94 & 54.93 & 23.92 & 108 \\
-			\texttt{deo}      & OneAPI  & 46.32 & 7.64  & 27.22 & 18.54 & 142 \\
-			\texttt{deo}      & hipSYCL & 54.90 & 4.80  & 30.96 & 18.60 & 168 \\
-			\bottomrule
-		\end{tabular}
-		\caption{\label{tab:openqcd_perf}Performance comparison of CUDA and SYCL OpenQCD DW kernels on NVidia A100.}
-	\end{table}
-\end{center}
+\begin{table}[!htbp]
+	\begin{tabular}{@{}l l S S S S S@{}}
+		\toprule
+		\thead{Kernel                                                     \\ \vphantom{(ms)}} &
+		\thead{Compiler                                                   \\ \vphantom{(ms)}} &
+		{\thead{Duration                                                  \\ (ms)}} &
+		{\thead{Compute                                                   \\ throughput (\%)}} &
+		{\thead{Memory                                                    \\ throughput (\%)}} &
+		{\thead{Occupancy                                                 \\ (\%)}} &
+		{\thead{Registers                                                 \\ per thread}} \\
+		\midrule
+		\texttt{mulpauli} & CUDA    & 4.85  & 16.05 & 81.28 & 60.09 & 48  \\
+		\texttt{mulpauli} & OneAPI  & 17.21 & 7.39  & 70.98 & 23.30 & 116 \\
+		\texttt{mulpauli} & hipSYCL & 8.12  & 10.34 & 78,51 & 17.60 & 168 \\
+		\midrule
+		\texttt{doe}      & CUDA    & 7.57  & 15.78 & 62.59 & 24.65 & 116 \\
+		\texttt{doe}      & OneAPI  & 17.41 & 7.31  & 61.21 & 18.44 & 168 \\
+		\texttt{doe}      & hipSYCL & 11.14 & 10.57 & 63.54 & 12.28 & 255 \\
+		\midrule
+		\texttt{deo}      & CUDA    & 8.24  & 12.94 & 54.93 & 23.92 & 108 \\
+		\texttt{deo}      & OneAPI  & 46.32 & 7.64  & 27.22 & 18.54 & 142 \\
+		\texttt{deo}      & hipSYCL & 54.90 & 4.80  & 30.96 & 18.60 & 168 \\
+		\bottomrule
+	\end{tabular}
+	\caption{\label{tab:openqcd_perf}Performance comparison of CUDA and SYCL OpenQCD DW kernels on NVidia A100.}
+\end{table}
 
 \subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
