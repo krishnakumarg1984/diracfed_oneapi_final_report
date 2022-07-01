@@ -223,17 +223,6 @@ It is worth noting that the two compilers we used generate a different number of
 It seems plausible that there is a deficiency in the current state of the SYCL compilers, rather than the source code itself.
 This could be a good topic for investigation in future projects or hackathons.
 
-% Based on our initial comparisons, the CUDA kernels in OpenQCD perform better than the SYCL kernels we generated.
-% We have summarized the preliminary results in table~\ref{tab:openqcd_perf}.
-% The difference varies between the kernels we studied, from a factor of 2 to a factor of 6.
-% We note that the compute throughput seems categorically lower by roughly a factor of 2, while the memory throughput is comparable in the \verb #mulpauli# and \verb #doe# kernels and lower by a factor of 2 in the \verb #deo# kernel.
-% NSight Compute suggests the kernels are bottlenecked by memory throughput.
-% A significant difference between the memory use of the CUDA and SYCL kernels is the CUDA kernels are only using Global memory while SYCL kernels are using both Global and Local memory.
-% The roofline analysis gives an AI of 0.37 for the SYCL code and 1.15 for the CUDA code.
-% It seems safe to say that the SYCL code is performing memory accesses that may be unnecessary.
-% This requires further study and optimization.
-% \todo{@Tuomas Add what we found.Occupancy vs register pressure seems to be the main indicator} Changes to workgroup size did not have a significant effect on performance on NVidia A100s.
-
 \begin{table}[!htbp]
 	\begin{tabular}{@{}l l S S S S S@{}}
 		\toprule
