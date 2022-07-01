@@ -17,7 +17,6 @@ The source code for OpenMM contains CUDA and OpenCL code allowing many platforms
 With OpenCL support it is possible to target Intel GPUs and run OpenMM out of the box.
 This process is straightforward and comparable to other platforms.
 For the readers reference OpenMM can be installed using the following command:
-
 \begin{verbatim}
 conda install -c conda-forge openmm
 \end{verbatim}
@@ -29,9 +28,9 @@ python benchmark.py --test=pme --platform=OpenCL
     --precision=single --seconds=3 --heavy-hydrogens
 \end{verbatim}
 
-This yielded a simulation speed of $107 ns/day$.
-For comparison, a Nvidia Quadro M1000M (a 2015 GPU with 1.6 times the thermal design power) provides simulation speeds of $82 ns/day$ in the same benchmark.
-Note that instabilities where observed in these benchmarks on the Intel DevCloud with simulations longer than 3 seconds, such instabilities are not observed on other platforms.
+This yielded a simulation speed of $\qty{107}{\nano\second\per\text{day}}$.
+In comparison, a Nvidia Quadro M1000M (a 2015 GPU with 1.6 times the thermal design power) provides simulation speeds of \qty{82}{\nano\second\per\text{day}} in the same benchmark.
+Note that instabilities where seen in these benchmarks on Intel DevCloud with simulations longer than 3 seconds, such instabilities are not observed on other platforms.
 
 \subsubsection{What to Port to SYCL?}\label{sec:openmm_whattoport}
 

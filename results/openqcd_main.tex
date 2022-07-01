@@ -178,9 +178,6 @@ With Github's current design, the only remedy for these problems is to manually 
 While commit history can be automatically migrated, it requires tedious manual intervention to migrate bug reports, the Kanban board and project wiki, while closed pull requests and associated notes/discussions are lost forever.
 In view of the aforesaid difficulties which we faced during this project, it is recommended to seek alternatives for long-term data storage needs for the reference data files.
 
-
-% \todo{@Krishna, Report on difficulties with Git LFS on GitHub}
-
 \subsubsection{Continuous Integration}
 
 It is possible to install prebuilt binaries of both OneAPI and hipSYCL compilers from public repositories relatively quickly, which enabled us to use CI workflows during development.
@@ -266,7 +263,36 @@ This could be a good topic for investigation in future projects or hackathons.
 
 \subsubsection{Accessing Device and Host Memory}\label{sec:openqcd_memoryaccess}
 
-% \todo{@Krishna Report on Explicit vs Implicit memory movement in USM, mention buffer/accessor model}
+The SYCL~2020 standard supports two main modes of managing host/device memory.
+The first mode of memory management is Unified Shared Memory~(USM) in which is a pointer on the host is also a valid pointer on the device.
+The USM pointers may simply be dereferenced to access the underlying data either on the host or on the device as needed.
+USM offers a convenient abstraction to data transfer paradigms pertinent to heterogeneous systems, and offers convenient syntactic sugar to relieve the developer of the bookkeeping of pointer ownership, validity and other low-level memory access aspects.
+
+SYCL also supports the `buffer-accessor` model of memory management introduced prior to the SYCL~2020 standard.
+Here, a buffer object is declared as container references to underlying data, with the constraint that neither the host or the device may directly access the buffer.
+Instead, accessor objects are created on the host/device to obtain access to the required data.
+Although the default accessor objects are created with read and write capabilities, it is possible to optimise this by declaring read-only or write-only accessor objects as per the task at hand.
+
+For SYCL ports of existing C++ codes that makes extensive use of pointers, the USM approach is regarded as a natural starting point.
+Indeed the output of the \texttt{dpct} transpiler produced USM SYCL code from the CUDA code.
+Within USM programming, there exist two paradigms --- 1) Implicit USM access and 2) Explicit USM access.
+Since the input CUDA code has explicit copying of data between the host and device, the SYCL code produced by the transpiler also included the SYCL analogues \ie~used explicit USM access.
+After noting the inferior performance of the generated explicit-USM SYCL code as reported in table~\ref{tab:openqcd_perf}, we adapted the code to use implicit memory access with a view to investigate its performance.
+
+In implicit USM, there are no explicit function calls to copy data between host and device, and there exists three modes of allocating memory --- host, device and shared.
+In host memory allocation, the memory allocated on the host can be accessed on-demand on the device.
+However, a key consideration is that this does not place the data on the device's own memory, but rather is fetched on demand over a slower PCIe bus.
+This may be suitable if one-off access to moderate-volume data is needed.
+In device allocation, memory is allocated on the device and cannot be accessed directly on the host.
+In shared allocation, the runtime is free to perform data transfers between the host and device memories as per the kernel's data requirements.
+
+For the spinors \texttt{m,n,u,piup,pidn}, we used host allocation since the device kernels do not require repeated access to the data.
+Furthermore, this enabled us to clean up the SYCL code by removing the \texttt{malloc} lines corresponding to explicit USM access.
+For the spinor \texttt{r}, \ie~the main output of the \texttt{dw} computation, a shared allocation was chosen, since this result is used in the invoking function.
+After adapting the SYCL code to use implicit USM, performance analysis did not reveal any significant gains over that reported in table~\ref{tab:openqcd_perf}.
+However, it should be noted that the CUDA and SYCL codes currently incur a bookkeeping overhead of data structure realignment from Array-of-Structures to Structure-of-Arrays for performance reasons.
+In the future, it is intended that the maintainers of OpenQCD shall perform this data structure rearrangement in their codebase, thus enabling us to remove the relevant lines.
+Once this change is incorporated in upstream, the performance of the implicit USM SYCL codes shall be revisited.
 
 \subsubsection{Estimate of Development Effort}\label{sec:openqcd_personhours}
 
